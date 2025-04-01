@@ -85,10 +85,12 @@ const clearProducts = () => {
 
 <style>
 .mesas {
-  display: flex;
-  flex-wrap: nowrap; /* Evita que las mesas se envuelvan */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Three columns */
+
   overflow-x: auto; /* Permite desplazamiento horizontal si es necesario */
   gap: 10px; /* Espaciado entre las mesas */
+  justify-content: center;
 }
 
 .mesa-card {
