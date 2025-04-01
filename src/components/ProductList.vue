@@ -254,19 +254,20 @@ const getCategoryColor = (categoryId) => {
 
 .filters {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   margin-bottom: 20px;
 }
 
 .search-input, .category-select {
-  padding: 8px 12px;
+  padding: 12px 16px;
+  font-size: 1.2 rem;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 6px;
   flex: 1;
 }
 
 .category-select {
-  max-width: 200px;
+  max-width: 300px;
 }
 
 .product-form h3 {
@@ -294,7 +295,7 @@ const getCategoryColor = (categoryId) => {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 3 products per row */
+  grid-template-columns: repeat(3, 1fr); /* 3 products per row */
   gap: 15px;
 }
 
