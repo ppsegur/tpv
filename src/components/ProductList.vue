@@ -283,12 +283,13 @@ const getCategoryColor = (categoryId) => {
   transform: translateX(-50%);
   background-color: #28a745;
   color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 20px 30px;
+  border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1000;
-  font-size: 1rem;
+  font-size: 5rem;
   text-align: center;
+  font-weight: bold;
 }
 .filters {
   display: flex;
