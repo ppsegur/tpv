@@ -2,9 +2,13 @@
   <div class="products-management">
     <!-- Columna izquierda -->
     
+    <div v-if="showConfirmation" class="confirmation-message">
+      {{ confirmationMessage }}
+    </div>
 
     <!-- Columna derecha -->
     <div class="product-management">
+
       <!-- Filtros -->
       <div class="filters">
         <input 
@@ -71,6 +75,23 @@ const newProduct = ref({
   price: 0,
   categoryId: null
 });
+
+
+// Estado para el mensaje de confirmación
+const confirmationMessage = ref('');
+const showConfirmation = ref(false);
+
+// Función para mostrar el mensaje temporalmente
+const displayConfirmation = (message) => {
+  confirmationMessage.value = message;
+  showConfirmation.value = true;
+  setTimeout(() => {
+    showConfirmation.value = false;
+    confirmationMessage.value = '';
+  }, 3000); // Ocultar el mensaje después de 3 segundos
+};
+
+
 
 // Filtrar productos por nombre y categoría
 const filteredProducts = computed(() => {
@@ -147,6 +168,9 @@ const addToMesa = (product) => {
     ...product, 
     cantidad: 1 
   });
+  // Mostrar mensaje de confirmación
+  const mesaId = mesasStore.selectedMesaId;
+  displayConfirmation(`"${product.name}" añadido correctamente a la mesa número ${mesaId}`);
 };
 
 // Función para obtener el color de fondo según la categoría
@@ -252,6 +276,20 @@ const getCategoryColor = (categoryId) => {
   border-radius: 8px;
 }
 
+.confirmation-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  font-size: 1rem;
+  text-align: center;
+}
 .filters {
   display: flex;
   gap: 15px;
