@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import MesaView from './views/MesasView.vue'; // Corrected import path
+import MesaView from './views/MesasView.vue'; // Import the MesaView component
 
 const routes = [
-  { path: '/', component: MesaView }, // Set MesasView as the default route
-  { path: '/mesa/:id', component: MesaView },
+  { path: '/', component: MesaView }, // Default route
+  { path: '/mesa/:id', component: MesaView }, 
 ];
 
 const router = createRouter({
