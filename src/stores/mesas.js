@@ -27,14 +27,15 @@ export const useMesasStore = defineStore('mesas', {
       }
     },
     agregarProducto(producto) {
+      console.log('Producto recibido en agregarProducto:', producto);
       const mesa = this.mesas.find(m => m.id === this.selectedMesaId);
       if (mesa) {
         const existingProduct = mesa.productos.find(p => p.id === producto.id);
         if (existingProduct) {
-          existingProduct.cantidad += 1; // Incrementar cantidad si ya existe
+          existingProduct.cantidad += producto.cantidad; // Incrementar cantidad por la cantidad recibida
           console.info('Producto actualizado:', existingProduct);
         } else {
-          mesa.productos.push({ ...producto, cantidad: 1 }); // Añadir con cantidad inicial de 1
+          mesa.productos.push({ ...producto, cantidad: producto.cantidad }); // Añadir con la cantidad recibida
           console.info('Producto añadido:', producto);
         }
       } else {
@@ -44,7 +45,7 @@ export const useMesasStore = defineStore('mesas', {
     calcularTotal(id) {
       const mesa = this.mesas.find(m => m.id === id);
       if (mesa) {
-        return mesa.productos.reduce((total, p) => total + p.precio * p.cantidad, 0);
+        return mesa.productos.reduce((total, p) => total + p.price * p.cantidad, 0);
       }
       return 0;
     },
@@ -69,5 +70,11 @@ export const useMesasStore = defineStore('mesas', {
         mesa.ocupada = false;
       }
     }
-  }
+  },
+  cambiarNombreMesa(id, nuevoNombre) {
+    const mesa = this.mesas.find(m => m.id === id);
+    if (mesa) {
+      mesa.nombre = nuevoNombre;
+    }
+  },
 });
