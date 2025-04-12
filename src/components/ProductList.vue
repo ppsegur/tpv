@@ -1,6 +1,5 @@
 <template>
   <div class="products-management">
-    <!-- Removed duplicate main and filtros elements -->
     <!-- Encabezado con filtros -->
     <div class="filters-header">
       <h2>Gestión de Productos</h2>
@@ -10,20 +9,26 @@
           placeholder="Buscar producto..."
           class="search-input"
         >
-      <main class="tabla">
-        <div class="filtros">
-          <input type="text" v-model="busqueda" placeholder="Buscar producto..." />
-          <select v-model="categoriaSeleccionada">
-            <option value="">Todas las categorías</option>
-            <option v-for="categoria in categoriasUnicas" :key="categoria.id" :value="categoria.id">
-              {{ categoria.name }}
-            </option>
-          </select>
-        </div>
-      </main>
+      </div>
+
+      <!-- Botones de categoría en lugar de select -->
+      <div class="category-buttons">
+        <button 
+          :class="{ active: selectedCategory === '' }" 
+          @click="selectedCategory = ''"
+        >
+          Todas las categorías
+        </button>
+        <button 
+          v-for="categoria in productStore.categories" 
+          :key="categoria.id"
+          :class="{ active: selectedCategory === categoria.name }"
+          @click="selectedCategory = categoria.name"
+        >
+          {{ categoria.name }}
+        </button>
+      </div>
     </div>
-    <br>
-    <br>
 
     <!-- Lista de productos -->
     <div class="products-grid">
@@ -39,7 +44,7 @@
           <p class="price">€{{ product.price.toFixed(2) }}</p>
         </div>
         <div class="product-actions">
-          <button @click.stop="addToMesa(product)" class="action-btn add-btn">
+          <button @click.stop="openQuantityModal(product)" class="action-btn add-btn">
             Añadir a Mesa
           </button>
           <button @click.stop="deleteProduct(product.id)" class="action-btn delete-btn">
@@ -48,49 +53,113 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal para seleccionar cantidad -->
+    <div v-if="showQuantityModal" class="modal-overlay">
+      <div class="modal">
+        <h2>Selecciona la cantidad para "{{ selectedProduct.name }}"</h2>
+        <div class="quantity-options">
+          <button 
+            v-for="quantity in 9" 
+            :key="quantity" 
+            @click="addProductToMesa(quantity)"
+            class="quantity-btn"
+          >
+            {{ quantity }}
+          </button>
+        </div>
+        <button @click="closeQuantityModal" class="close-btn">Cancelar</button>
+      </div>
+    </div>
+    <!-- Modal para productos por peso -->
+<div v-if="showWeightModal" class="modal-overlay">
+  <div class="modal">
+    <h2>Introduce el peso (en gramos) para "{{ selectedProduct.name }}"</h2>
+    <input type="number" v-model="enteredWeight" min="1" class="search-input" />
+    <div style="margin-top: 20px;">
+      <button @click="addProductByWeight" class="quantity-btn">Aceptar</button>
+      <button @click="closeWeightModal" class="close-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Mensaje de confirmación -->
+    <div v-if="showConfirmation" class="confirmation-message">
+      {{ confirmationMessage }}
     </div>
   </div>
 </template>
 
 <script setup>
-
 import { useMesasStore } from '../stores/mesas.js'; 
 import { useProductStore } from '../stores/productStore.js';
 import { ref, computed } from 'vue';
-import { useRoute } from 'vue-router';
 
 const productStore = useProductStore();
 const mesasStore = useMesasStore();
 
-// Estado para categorías
-const newCategoryName = ref('');
+const productSearch = ref('');
 const selectedCategory = ref('');
 
-// Estado para productos
-const productSearch = ref('');
-const newProduct = ref({
-  name: '',
-  price: 0,
-  categoryId: null
-});
+const showQuantityModal = ref(false);
+const selectedProduct = ref(null);
 
+const showWeightModal = ref(false);
+const enteredWeight = ref('');
 
-// Estado para el mensaje de confirmación
 const confirmationMessage = ref('');
 const showConfirmation = ref(false);
+
 const displayConfirmation = (message) => {
   confirmationMessage.value = message;
   showConfirmation.value = true;
   setTimeout(() => {
     showConfirmation.value = false;
     confirmationMessage.value = '';
-  }, 3000); // Ocultar el mensaje después de 3 segundos
-}; // Close the displayConfirmation function
+  }, 3000);
+};
+
+const openQuantityModal = (product) => {
+  selectedProduct.value = product;
+
+  const categoryName = productStore.getCategoryName(product.categoryId).toLowerCase();
+  const isByWeight = categoryName.includes('chacina'); // Puedes cambiar esto según el nombre exacto
+
+  if (isByWeight) {
+    showWeightModal.value = true;
+    enteredWeight.value = '';
+  } else {
+    showQuantityModal.value = true;
+  }
+};
+
+
+const closeQuantityModal = () => {
+  selectedProduct.value = null;
+  showQuantityModal.value = false;
+};
+
+const addProductToMesa = (quantity) => {
+  if (!mesasStore.selectedMesaId) {
+    alert('Por favor, selecciona una mesa primero.');
+    closeQuantityModal();
+    return;
+  }
+
+  mesasStore.agregarProducto({ 
+    ...selectedProduct.value, 
+    cantidad: quantity 
+  });
+
+  const mesaId = mesasStore.selectedMesaId;
+  displayConfirmation(`"${selectedProduct.value.name}" añadido correctamente a la mesa número ${mesaId} (${quantity} veces)`);
+  closeQuantityModal();
+};
 
 const filteredProducts = computed(() => {
   let result = [...productStore.products];
 
-  // Filtrar por categoría seleccionada
   if (selectedCategory.value) {
     const category = productStore.categories.find(c => 
       c.name.toLowerCase() === selectedCategory.value.toLowerCase()
@@ -98,11 +167,10 @@ const filteredProducts = computed(() => {
     if (category) {
       result = result.filter(p => p.categoryId === category.id);
     } else {
-      result = []; // Si no se encuentra la categoría, devuelve un array vacío
+      result = [];
     }
   }
 
-  // Filtrar por texto de búsqueda
   if (productSearch.value) {
     const searchTerm = productSearch.value.toLowerCase();
     result = result.filter(p => 
@@ -113,41 +181,6 @@ const filteredProducts = computed(() => {
 
   return result;
 });
-// Métodos para categorías
-const addNewCategory = () => {
-  if (newCategoryName.value.trim()) {
-    productStore.addCategory(newCategoryName.value.trim());
-    newCategoryName.value = '';
-  }
-};
-
-const deleteCategory = (categoryId) => {
-  try {
-    productStore.deleteCategory(categoryId);
-    if (selectedCategory.value === productStore.getCategoryName(categoryId)) {
-      selectedCategory.value = '';
-    }
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-const selectCategory = (categoryName) => {
-  selectedCategory.value = selectedCategory.value === categoryName ? '' : categoryName;
-};
-
-// Métodos para productos
-const addNewProduct = () => {
-  if (newProduct.value.name.trim() && newProduct.value.price > 0) {
-    productStore.addProduct({
-      name: newProduct.value.name.trim(),
-      price: parseFloat(newProduct.value.price),
-      categoryId: newProduct.value.categoryId
-    });
-    // Reset form
-    newProduct.value = { name: '', price: 0, categoryId: null };
-  }
-};
 
 const deleteProduct = (productId) => {
   if (confirm('¿Estás seguro de eliminar este producto?')) {
@@ -155,121 +188,205 @@ const deleteProduct = (productId) => {
   }
 };
 
-const addToMesa = (product) => {
-  if (!mesasStore.selectedMesaId) {
-    alert('Por favor, selecciona una mesa primero.');
-    return;
-  }
-  mesasStore.agregarProducto({ 
-    ...product, 
-    cantidad: 1 
-  });
-  // Mostrar mensaje de confirmación
-  const mesaId = mesasStore.selectedMesaId;
-  displayConfirmation(`"${product.name}" añadido correctamente a la mesa número ${mesaId}`);
-};
-
-// Función para obtener el color de fondo según la categoría
 const getCategoryColor = (categoryId) => {
   const colors = {
-    1: '#d1e7dd', // Categoría 1 - Verde suave
-    2: '#cfe2ff', // Categoría 2 - Azul suave
-    3: '#f8d7da', // Categoría 3 - Rojo suave
-    4: '#fff3cd', // Categoría 4 - Amarillo suave
-    5: '#d9edf7', // Categoría 5 - Celeste suave
-    6: '#e2e3e5', // Categoría 6 - Gris suave
+    1: '#d1e7dd',
+    2: '#cfe2ff',
+    3: '#f8d7da',
+    4: '#fff3cd',
+    5: '#d9edf7',
+    6: '#e2e3e5',
   };
-  return colors[categoryId] || '#ffffff'; // Color por defecto: blanco
+  return colors[categoryId] || '#ffffff';
 };
+
+
+const addProductByWeight = () => {
+  const grams = parseFloat(enteredWeight.value);
+
+  if (isNaN(grams) || grams <= 0) {
+    alert('Por favor, introduce un peso válido.');
+    return;
+  }
+
+  const precioPorGramo = selectedProduct.value.price / 1000;
+  const precioFinal = +(precioPorGramo * grams).toFixed(2);
+
+  mesasStore.agregarProducto({
+    ...selectedProduct.value,
+    cantidad: 1,
+    peso: grams,
+    precioFinal: precioFinal
+  });
+
+  const mesaId = mesasStore.selectedMesaId;
+  displayConfirmation(`"${selectedProduct.value.name}" añadido a mesa ${mesaId} (${grams}g - €${precioFinal})`);
+  closeWeightModal();
+};
+const closeWeightModal = () => {
+  showWeightModal.value = false;
+  selectedProduct.value = null;
+  enteredWeight.value = '';
+};
+
 </script>
 
 <style scoped>
 .products-management {
-  display: grid;
-  grid-template-columns: 300px 1fr; /* Dos columnas: aside y contenido principal */
+  display: flex;
+  flex-direction: column;
   gap: 20px;
   padding: 20px;
 }
 
-.left-column {
+.filters-header {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  height: fit-content;
+  gap: 10px;
 }
 
+.filters {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
 
+.search-input {
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  max-width: 300px;
+  flex: 2;
+}
 
-.category-form {
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.category-buttons button {
+  padding: 8px 15px;
+  border: none;
+  background-color: #f0f0f0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.category-buttons button:hover {
+  background-color: #d6eaff;
+  color: inherit;
+}
+
+.category-buttons button.active {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.product-card {
+  padding: 15px;
+  border-radius: 8px;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+}
+
+.product-info h3 {
+  margin: 0 0 5px;
+}
+
+.category {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.price {
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.product-actions {
+  margin-top: 10px;
   display: flex;
   gap: 10px;
-  margin-bottom: 15px;
 }
 
-.category-form input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
+.action-btn {
+  padding: 8px 12px;
+  border: none;
   border-radius: 4px;
+  cursor: pointer;
 }
 
-.category-form button {
-  padding: 8px 15px;
+.add-btn {
   background-color: #28a745;
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
-.categories-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.category-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.category-item:hover {
-  background: #f1f1f1;
-}
-
-.category-item.active {
-  background-color: #e7f3ff;
-  border-color: #86b7fe;
-}
-
-.delete-category {
-  background: #dc3545;
+.delete-btn {
+  background-color: #dc3545;
   color: white;
-  border: none;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
 }
 
-.product-management {
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
   background: white;
-  padding: 15px;
-  border-radius: 8px;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 400px;
+}
+
+.quantity-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.quantity-btn {
+  padding: 10px 15px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.close-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .confirmation-message {
@@ -283,135 +400,8 @@ const getCategoryColor = (categoryId) => {
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1000;
-  font-size: 5rem;
+  font-size: 1.2rem;
   text-align: center;
   font-weight: bold;
-}
-.filters {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  align-items: center; /* Alinear verticalmente */
-  justify-content: flex-start; /* Alinear horizontalmente */
-}
-
-.search-input, .category-select {
-  padding: 10px 15px;
-  font-size: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  flex: 1; /* Hacer que ambos elementos ocupen el mismo espacio */
-  max-width: 300px; /* Limitar el ancho máximo */
-}
-
-.search-input {
-  flex: 2; /* Hacer que el campo de búsqueda sea más ancho */
-}
-
-.category-select {
-  flex: 1; /* Hacer que el campo de categoría sea más estrecho */
-}
-
-button {
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-.category-select {
-  max-width: 300px;
-}
-
-.product-form h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.product-input {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.add-product-btn {
-  padding: 8px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 3 products per row */
-  gap: 15px;
-}
-
-.product-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  transition: all 0.2s;
-  transition: background-color 0.3s ease; /* Transición suave para el color */
-}
-
-.product-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.product-info h3 {
-  margin: 0 0 5px 0;
-}
-
-.product-info .category {
-  color: #6c757d;
-  font-size: 0.9rem;
-  margin: 0 0 5px 0;
-}
-
-.product-info .price {
-  font-weight: bold;
-  margin: 0 0 10px 0;
-}
-
-.product-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 6px 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.add-btn {
-  background-color: #28a745;
-  color: white;
-}
-.delete-btn {
-  background-color: #dc3545;
-  color: white;
-}
-
-@media (max-width: 768px) {
-  .products-management {
-    grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */  }
 }
 </style>

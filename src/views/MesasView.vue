@@ -29,37 +29,77 @@
             {{ mesa.ocupada || mesa.productos.length > 0 ? 'Ocupada' : 'Libre' }}
           </p>
           <div class="mesa-actions">
-            <button @click.stop="mesasStore.ocuparMesa(mesa.id)">
-              {{ mesa.ocupada || mesa.productos.length > 0 ? 'Liberar' : 'Ocupar' }}
-            </button>
-            <button @click.stop="openModal(mesa.id)">
-              Ver Productos
-            </button>
+            <button @click.stop="openModal(mesa.id)">Ver Productos</button>
+            <button @click.stop="clearProducts">Limpiar Productos</button>
+            <button @click.stop="liberarMesa(mesa.id)">Liberar Mesa</button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Modal -->
+    <div v-if="showModal" class="modal-overlay">
+      <div class="modal">
+        <h2>Productos de la Mesa {{ selectedMesaId }}</h2>
+        <ul>
+          <li v-for="(producto, index) in selectedProductos" :key="index">
+            {{ producto.name }} -
+            <span v-if="producto.categoria === 'Chacinas'">
+              {{ producto.gramos }}g = €{{ (producto.precioPor100g * (producto.gramos / 100)).toFixed(2) }}
+              <input type="number" v-model.number="producto.gramos" min="1" step="5" @change="actualizarPrecioPorGramos(producto)" />
+            </span>
+            <span v-else>
+              Cantidad: {{ producto.cantidad }} - €{{ (producto.price * producto.cantidad).toFixed(2) }}
+              <button @click="decreaseQuantity(index)">-</button>
+              <button @click="increaseQuantity(index)">+</button>
+            </span>
+            <button @click="removeProduct(index)">Eliminar</button>
+            <button @click.stop="() => { liberarMesa(selectedMesaId); closeModal(); }">Liberar Mesa</button>
+          </li>
+        </ul>
+
+        <p>Total: €{{ totalPrice.toFixed(2) }}</p>
+        <button @click="closeModal">Cerrar</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button @click="addMesa" style="padding: 10px 20px; font-size: 1rem; background-color: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer;">
+        ➕ Añadir Mesa
+      </button>
+    </div>
+
+    <ProductList @productoSeleccionado="agregarProductoAMesa" />
   </div>
-  <ProductList/>
 </template>
+
 <script setup>
 import { useMesasStore } from '../stores/mesas';
 import { ref, computed } from 'vue';
 import ProductList from '../components/ProductList.vue';
-import FormManagement from '../components/FormManagement.vue';
 
 const mesasStore = useMesasStore();
 const showModal = ref(false);
 const selectedMesaId = ref(null);
 
+const liberarMesa = (id) => {
+  mesasStore.limpiarProductosMesa(id);
+};
+
 const selectedProductos = computed(() => {
   if (!selectedMesaId.value) return [];
   const mesa = mesasStore.mesas.find(m => m.id === selectedMesaId.value);
-  return mesa ? [...mesa.productos] : [];
+  return mesa ? mesa.productos : [];
 });
 
 const totalPrice = computed(() => {
-  return selectedProductos.value.reduce((sum, p) => sum + (p.price * p.cantidad || 0), 0);
+  return selectedProductos.value.reduce((sum, p) => {
+    if (p.categoria === 'Chacinas') {
+      return sum + (p.precioPor100g * (p.gramos / 100));
+    } else {
+      return sum + (p.price * p.cantidad);
+    }
+  }, 0);
 });
 
 const selectMesa = (id) => {
@@ -92,7 +132,59 @@ const clearProducts = () => {
 const updateMesaNombre = (id, nuevoNombre) => {
   mesasStore.cambiarNombreMesa(id, nuevoNombre);
 };
+
+const increaseQuantity = (index) => {
+  const mesa = mesasStore.mesas.find(m => m.id === selectedMesaId.value);
+  if (mesa && mesa.productos[index]) {
+    mesa.productos[index].cantidad += 1;
+  }
+};
+
+const decreaseQuantity = (index) => {
+  const mesa = mesasStore.mesas.find(m => m.id === selectedMesaId.value);
+  if (mesa && mesa.productos[index].cantidad > 1) {
+    mesa.productos[index].cantidad -= 1;
+  }
+};
+
+const addMesa = () => {
+  const nuevaMesa = {
+    id: mesasStore.mesas.length + 1,
+    nombre: '',
+    productos: [],
+    ocupada: false
+  };
+  mesasStore.mesas.push(nuevaMesa);
+};
+
+const agregarProductoAMesa = (producto) => {
+  const mesa = mesasStore.mesas.find(m => m.id === mesasStore.selectedMesaId);
+  if (!mesa) return;
+
+  if (producto.categoria === 'Chacinas') {
+    mesa.productos.push({
+      ...producto,
+      gramos: 100, // valor por defecto
+      precioPor100g: producto.price // suponiendo que el precio original es por 100g
+    });
+  } else {
+    const existente = mesa.productos.find(p => p.id === producto.id && p.categoria !== 'Chacinas');
+    if (existente) {
+      existente.cantidad += 1;
+    } else {
+      mesa.productos.push({ ...producto, cantidad: 1 });
+    }
+  }
+  mesa.ocupada = true;
+};
+
+const actualizarPrecioPorGramos = (producto) => {
+  // No es necesario hacer nada aquí si usamos `totalPrice` dinámico
+  // Pero podrías validar el valor si lo deseas
+  if (producto.gramos < 1) producto.gramos = 1;
+};
 </script>
+
 <style scoped>
 /* Contenedor principal */
 .mesas-container {
@@ -167,7 +259,7 @@ const updateMesaNombre = (id, nuevoNombre) => {
 
 .text-ocupada {
   font-weight: bold;
-  color: #d63384 !important; /* Rosa para texto "Ocupada" */
+  color: #fe3398 !important; /* Rosa para texto "Ocupada" */
 }
 
 .text-libre {
@@ -206,7 +298,7 @@ const updateMesaNombre = (id, nuevoNombre) => {
 
 /* Estilo para mesas seleccionadas */
 .mesa-card.selected {
-  background-color: #007bff; /* Color de fondo para la mesa seleccionada */
+  background-color: #8eb2d8; /* Color de fondo para la mesa seleccionada */
   color: white; /* Cambiar el color del texto */
   border-color: #0056b3; /* Cambiar el color del borde */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir un efecto de sombra */
@@ -214,14 +306,14 @@ const updateMesaNombre = (id, nuevoNombre) => {
 
 /* Estilo para mesas ocupadas */
 .mesa-card.ocupada {
-  background-color: #ffc107; /* Amarillo para mesas ocupadas */
+  background-color: #f0d78dc8; /* Amarillo para mesas ocupadas */
   color: black;
-  border-color: #e0a800;
+  border-color: #caa844d5;
 }
 
 /* Estilo para mesas ocupadas y seleccionadas */
 .mesa-card.selected-ocupada {
-  background-color: #dc3545; /* Rojo para mesas ocupadas y seleccionadas */
+  background-color: #de5765ae; /* Rojo para mesas ocupadas y seleccionadas */
   color: white;
   border-color: #bd2130;
   box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
@@ -256,5 +348,52 @@ const updateMesaNombre = (id, nuevoNombre) => {
   .mesas-grid {
     grid-template-columns: 1fr; /* 1 columna en pantallas pequeñas */
   }
+}
+/* Estilos del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90%;
+  text-align: center;
+}
+
+.modal ul li button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.modal ul li button:first-child {
+  background-color: #dc3545; /* Rojo para disminuir */
+  color: white;
+}
+
+.modal ul li button:nth-child(2) {
+  background-color: #28a745; /* Verde para aumentar */
+  color: white;
+}
+
+.modal ul li button:last-child {
+  background-color: #007bff; /* Azul para eliminar */
+  color: white;
 }
 </style>
