@@ -10,6 +10,7 @@ export const useMesasStore = defineStore('mesas', {
       { id: 5, ocupada: false, productos: [] },
       { id: 6, ocupada: false, productos: [] },
     ],
+    historial: [],
     selectedMesaId: null,
   }),
   actions: {
@@ -63,13 +64,28 @@ export const useMesasStore = defineStore('mesas', {
         }
       }
     },
-    limpiarProductosMesa(mesaId) { // Cambiado de clearProducts a limpiarProductosMesa
+    limpiarProductosMesa(mesaId) {
       const mesa = this.mesas.find(m => m.id === mesaId);
       if (mesa) {
+        if (mesa.productos.length > 0) {
+          // Guardar el ticket en el historial
+          const total = mesa.productos.reduce((sum, p) => sum + p.price * p.cantidad, 0);
+          this.historial.push({
+            mesaId,
+            fecha: new Date().toISOString(), // Fecha actual
+            productos: [...mesa.productos], // Copia de los productos
+            total,
+          });
+        }
+        // Limpiar la mesa
         mesa.productos = [];
         mesa.ocupada = false;
       }
-    }
+    },
+    obtenerHistorialPorFecha(fecha) {
+      // Filtrar tickets por fecha
+      return this.historial.filter(ticket => ticket.fecha.startsWith(fecha));
+    },
   },
   cambiarNombreMesa(id, nuevoNombre) {
     const mesa = this.mesas.find(m => m.id === id);

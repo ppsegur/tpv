@@ -1,28 +1,12 @@
 <script setup>
-import MesasView from './views/MesasView.vue';
-import ProductList from './components/ProductList.vue';
-import FormManagement from './components/FormManagement.vue';
+import NavBar from './components/Nav-bar.vue';
 </script>
 <template>
   <div class="container">
+    <!-- Navbar de Mesas -->
+     <Nav-bar />
     <!-- Sección de Mesas estilo NavBar -->
-    <nav class="mesas-navbar">
-      <MesasView />
-    </nav>
-
-    <!-- Layout principal con Sidebar y Productos -->
-    <div class="main-layout">
-      <!-- Sidebar: Formularios de gestión -->
-      <aside class="sidebar">
-      <FormManagement />
-      </aside>
-
-      <!-- Sección de Productos -->
-      <main class="productos">
-        <!-- Barra de búsqueda y filtros -->
-        <ProductList />
-      </main>
-    </div>
+    <router-view />
   </div>
 </template>
 
@@ -32,6 +16,8 @@ import FormManagement from './components/FormManagement.vue';
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100%;
+  min-width: 1000px;
 }
 
 /* Navbar de Mesas */

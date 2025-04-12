@@ -11,10 +11,9 @@ const routes = [
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }, // Ruta para manejar 404
 ];
 
-
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 });
 
 export default router;

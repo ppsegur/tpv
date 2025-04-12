@@ -1,59 +1,52 @@
 <template>
-  <div class="mesas">
+  <div class="mesas-container">
     <h1>Gestión de Mesas</h1>
-    <div
-      v-for="mesa in mesasStore.mesas"
-      :key="mesa.id"
-      class="mesa-card"
-      :class="{
-        selected: mesa.id === mesasStore.selectedMesaId,
-        ocupada: mesa.ocupada || mesa.productos.length > 0
-      }"
-      @click="selectMesa(mesa.id)"
-    >
-      <div class="mesa-content">
-        <input
-          type="text"
-          v-model="mesa.nombre"
-          placeholder="Nombre de la mesa"
-          class="mesa-nombre-input"
-          @blur="updateMesaNombre(mesa.id, mesa.nombre)"
-        />
-        <h2>{{ mesa.nombre || `Mesa ${mesa.id}` }}</h2>
-        <p>{{ mesa.ocupada || mesa.productos.length > 0 ? 'Ocupada' : 'Libre' }}</p>
-        <div class="mesa-actions">
-          <button @click.stop="mesasStore.ocuparMesa(mesa.id)">
-            {{ mesa.ocupada || mesa.productos.length > 0 ? 'Liberar' : 'Ocupar' }}
-          </button>
-          <button @click.stop="openModal(mesa.id)">
-            Ver Productos
-          </button>
+    <div class="mesas-grid">
+      <div
+        v-for="mesa in mesasStore.mesas"
+        :key="mesa.id"
+        class="mesa-card"
+        :class="{
+          selected: mesa.id === mesasStore.selectedMesaId,
+          ocupada: mesa.ocupada || mesa.productos.length > 0,
+          'selected-ocupada': (mesa.id === mesasStore.selectedMesaId) && (mesa.ocupada || mesa.productos.length > 0)
+        }"
+        @click="selectMesa(mesa.id)"
+      >
+        <div class="mesa-content">
+          <input
+            type="text"
+            v-model="mesa.nombre"
+            placeholder="Nombre de la mesa"
+            class="mesa-nombre-input"
+            @blur="updateMesaNombre(mesa.id, mesa.nombre)"
+          />
+          <h2>{{ mesa.nombre || `Mesa ${mesa.id}` }}</h2>
+          <p :class="{
+            'text-ocupada': mesa.ocupada || mesa.productos.length > 0,
+            'text-libre': !mesa.ocupada && mesa.productos.length === 0
+          }">
+            {{ mesa.ocupada || mesa.productos.length > 0 ? 'Ocupada' : 'Libre' }}
+          </p>
+          <div class="mesa-actions">
+            <button @click.stop="mesasStore.ocuparMesa(mesa.id)">
+              {{ mesa.ocupada || mesa.productos.length > 0 ? 'Liberar' : 'Ocupar' }}
+            </button>
+            <button @click.stop="openModal(mesa.id)">
+              Ver Productos
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
-  <div v-if="showModal" class="modal">
-    <div class="modal-content">
-      <h2>Productos de la Mesa {{ selectedMesaId }}</h2>
-      <ul>
-        <li v-for="(producto, index) in selectedProductos" :key="index">
-          {{ producto.name }} (x{{ producto.cantidad }}) - {{ (producto.price * producto.cantidad).toFixed(2) }}€
-          <button @click.stop="removeProduct(index)">Eliminar</button>
-        </li>
-      </ul>
-      <p>Total: {{ totalPrice.toFixed(2) }}€</p>
-      <div class="modal-buttons">
-        <button @click.stop="clearProducts">Liberar Mesa</button>
-        <button @click.stop="closeModal">Cerrar</button>
-      </div>
-    </div>
-  </div>
+  <ProductList/>
 </template>
-
 <script setup>
 import { useMesasStore } from '../stores/mesas';
 import { ref, computed } from 'vue';
+import ProductList from '../components/ProductList.vue';
+import FormManagement from '../components/FormManagement.vue';
 
 const mesasStore = useMesasStore();
 const showModal = ref(false);
@@ -100,88 +93,105 @@ const updateMesaNombre = (id, nuevoNombre) => {
   mesasStore.cambiarNombreMesa(id, nuevoNombre);
 };
 </script>
-
-<style>
-.mesas {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Forzar 3 columnas */
-  overflow-x: auto;
-  gap: 10px;
+<style scoped>
+/* Contenedor principal */
+.mesas-container {
   padding: 20px;
+  text-align: center; /* Centrar el título */
 }
 
+/* Estilo del título */
+.mesas-container h1 {
+  margin-bottom: 20px; /* Espacio entre el título y las mesas */
+  font-size: 2rem; /* Tamaño del título */
+  color: #333; /* Color del texto */
+}
+
+/* Contenedor de las mesas */
+.mesas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(250px, 1fr)); /* 3 columnas con ancho mínimo de 250px */
+  gap: 20px; /* Espacio entre las mesas */
+  justify-content: center; /* Centrar las mesas horizontalmente */
+  padding: 20px;
+  width: 100%; /* Ocupar todo el ancho disponible */
+  max-width: 1200px; /* Limitar el ancho máximo para pantallas grandes */
+  margin: 0 auto; /* Centrar el contenedor */
+}
+
+/* Tarjetas de las mesas */
 .mesa-card {
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer; /* Asegúrate de que el cursor indique que es interactivo */
-  background-color: #f8f9fa; /* Color de fondo por defecto (libre) */
+  cursor: pointer;
+  height: 100%; /* Asegurar que todas las tarjetas tienen la misma altura */
+  min-height: 180px; /* Altura mínima para las tarjetas */
+  background-color: #fff; /* Fondo blanco */
 }
 
-.mesa-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.mesa-card.selected {
-  border-color: #86dfcc;
-  color: black;
-  background-color: #e6f7ff; /* Color de fondo cuando está seleccionada */
-}
-
-.mesa-card.ocupada {
-  background-color: #ffe0b2; /* Color de fondo anaranjado para mesas ocupadas */
-  border-color: #ffb347;
-}
-.mesa-card.ocupada-seleccionada {
-  background-color: #d6b3ff; /* Morado claro */
-  border-color: #a673ff; /* Borde morado más oscuro */
-  color: white; /* Texto blanco para mejor contraste */
-}
-
+/* Contenido de las tarjetas */
 .mesa-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
+  padding: 20px;
+  height: 100%;
 }
 
+/* Input para el nombre de la mesa */
 .mesa-nombre-input {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 5px;
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 1rem;
+  font-size: 1.1rem;
   text-align: center;
 }
 
+/* Título dentro de las tarjetas */
 .mesa-content h2 {
-  margin-top: 5px;
-  font-size: 1.2rem;
+  margin-top: 8px;
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #333;
 }
 
+/* Texto de estado (Libre/Ocupada) */
 .mesa-content p {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 8px;
+  font-size: 1rem;
+  margin-bottom: 15px;
 }
 
+.text-ocupada {
+  font-weight: bold;
+  color: #d63384 !important; /* Rosa para texto "Ocupada" */
+}
+
+.text-libre {
+  font-weight: bold;
+  color: #28a745 !important; /* Verde para texto "Libre" */
+}
+
+/* Botones dentro de las tarjetas */
 .mesa-actions {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  width: 100%;
+  gap: 10px;
+  width: 90%;
+  margin-top: auto; /* Empujar los botones hacia abajo */
 }
 
 .mesa-actions button {
-  padding: 8px 12px;
+  padding: 10px 15px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .mesa-actions button:first-child {
@@ -194,102 +204,57 @@ const updateMesaNombre = (id, nuevoNombre) => {
   color: white;
 }
 
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+/* Estilo para mesas seleccionadas */
+.mesa-card.selected {
+  background-color: #007bff; /* Color de fondo para la mesa seleccionada */
+  color: white; /* Cambiar el color del texto */
+  border-color: #0056b3; /* Cambiar el color del borde */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir un efecto de sombra */
 }
 
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
+/* Estilo para mesas ocupadas */
+.mesa-card.ocupada {
+  background-color: #ffc107; /* Amarillo para mesas ocupadas */
+  color: black;
+  border-color: #e0a800;
+}
+
+/* Estilo para mesas ocupadas y seleccionadas */
+.mesa-card.selected-ocupada {
+  background-color: #dc3545; /* Rojo para mesas ocupadas y seleccionadas */
+  color: white;
+  border-color: #bd2130;
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+}
+
+.mesa-card.ocupada h2,
+.mesa-card.ocupada p {
   color: black;
 }
 
-.modal-content h2 {
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.modal-content ul {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 15px;
-}
-
-.modal-content li {
-  margin-bottom: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-content li:last-child {
-  border-bottom: none;
-}
-
-.modal-content li button {
-  padding: 5px 10px;
-  border: none;
-  background-color: #dc3545;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8rem;
-}
-
-.modal-content li button:hover {
-  background-color: #c82333;
-}
-
-.modal-content p {
-  font-weight: bold;
-  margin-bottom: 15px;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.modal-buttons button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.modal-buttons button:first-child {
-  background-color: #6c757d;
+.mesa-card.selected h2,
+.mesa-card.selected p,
+.mesa-card.selected-ocupada h2,
+.mesa-card.selected-ocupada p {
   color: white;
 }
 
-.modal-buttons button:first-child:hover {
-  background-color: #5a6268;
+/* Efectos hover */
+.mesa-card:hover {
+  transform: scale(1.02); /* Aumentar ligeramente el tamaño */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombra */
 }
 
-.modal-buttons button:last-child {
-  background-color: #007bff;
-  color: white;
+/* Responsive para pantallas más pequeñas */
+@media (max-width: 900px) {
+  .mesas-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columnas en pantallas medianas */
+  }
 }
 
-.modal-buttons button:last-child:hover {
-  background-color: #0056b3;
+@media (max-width: 600px) {
+  .mesas-grid {
+    grid-template-columns: 1fr; /* 1 columna en pantallas pequeñas */
+  }
 }
 </style>

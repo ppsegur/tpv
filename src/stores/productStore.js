@@ -154,7 +154,9 @@ export const useProductStore = defineStore('productStore', () => {
   const deleteProduct = (productId) => {
     products.value = products.value.filter(p => p.id !== productId);
   };
-
+  const eliminarProducto = (id) => {
+    this.productos = this.productos.filter(producto => producto.id !== id);
+  };
   return { 
     categories,
     products, 
