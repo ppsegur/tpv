@@ -1,38 +1,56 @@
 <template>
   <div class="products-management">
-    <!-- Columna izquierda -->
-    
     <div v-if="showConfirmation" class="confirmation-message">
       {{ confirmationMessage }}
     </div>
 
-    <!-- Columna derecha -->
-    <div class="product-management">
+    <div v-if="showQuantityModal" class="quantity-modal-overlay">
+      <div class="quantity-modal">
+        <h3>Seleccionar Cantidad</h3>
+        <div class="quantity-panel">
+          <button
+            v-for="n in 9"
+            :key="n"
+            @click="selectQuantity(n)"
+            class="quantity-card"
+          >
+            {{ n }}
+          </button>
+        </div>
+        <button @click="closeQuantityModal" class="close-modal-btn">Cancelar</button>
+      </div>
+    </div>
 
-      <!-- Filtros -->
+    <div class="product-management">
       <div class="filters">
-        <input 
-          v-model="productSearch" 
+        <input
+          v-model="productSearch"
           placeholder="Buscar producto..."
           class="search-input"
         >
-        <select v-model="selectedCategory" class="category-select">
-          <option value="">Todas las categorías</option>
-          <option 
-            v-for="category in productStore.categories" 
-            :key="category.id" 
-            :value="category.name"
+        <div class="category-buttons">
+          <button
+            :class="{ 'category-button': true, 'active': selectedCategory === '' }"
+            @click="selectedCategory = ''"
+          >
+            Todas
+          </button>
+          <button
+            v-for="category in productStore.categories"
+            :key="category.id"
+            :class="{ 'category-button': true, 'active': selectedCategory === category.name }"
+            @click="selectedCategory = category.name"
+            :style="{ '--category-color': getCategoryColor(category.id) }"
           >
             {{ category.name }}
-          </option>
-        </select>
+          </button>
+        </div>
       </div>
 
-      <!-- Lista de productos -->
       <div class="products-grid">
-        <div 
-          v-for="product in filteredProducts" 
-          :key="product.id" 
+        <div
+          v-for="product in filteredProducts"
+          :key="product.id"
           class="product-card"
           :style="{ backgroundColor: getCategoryColor(product.categoryId) }"
         >
@@ -42,7 +60,7 @@
             <p class="price">€{{ product.price.toFixed(2) }}</p>
           </div>
           <div class="product-actions">
-            <button @click.stop="addToMesa(product)" class="action-btn add-btn">
+            <button @click.stop="openQuantityModal(product)" class="action-btn add-btn">
               Añadir a Mesa
             </button>
             <button @click.stop="deleteProduct(product.id)" class="action-btn delete-btn">
@@ -56,8 +74,7 @@
 </template>
 
 <script setup>
-
-import { useMesasStore } from '../stores/mesas.js'; 
+import { useMesasStore } from '../stores/mesas.js';
 import { useProductStore } from '../stores/productStore.js';
 import { ref, computed } from 'vue';
 
@@ -66,7 +83,7 @@ const mesasStore = useMesasStore();
 
 // Estado para categorías
 const newCategoryName = ref('');
-const selectedCategory = ref('');
+const selectedCategory = ref(''); // Ahora será un string para la categoría seleccionada
 
 // Estado para productos
 const productSearch = ref('');
@@ -76,10 +93,14 @@ const newProduct = ref({
   categoryId: null
 });
 
-
 // Estado para el mensaje de confirmación
 const confirmationMessage = ref('');
 const showConfirmation = ref(false);
+
+// Estado para el modal de cantidad
+const showQuantityModal = ref(false);
+const selectedProductToAdd = ref(null);
+const quantity = ref(1); // Inicializamos la cantidad en 1
 
 // Función para mostrar el mensaje temporalmente
 const displayConfirmation = (message) => {
@@ -91,12 +112,49 @@ const displayConfirmation = (message) => {
   }, 3000); // Ocultar el mensaje después de 3 segundos
 };
 
+const selectQuantity = (amount) => {
+  quantity.value = amount;
+  addToMesaWithQuantity();
+  closeQuantityModal(); // Cerrar el modal automáticamente después de seleccionar la cantidad
+};
 
+// Función para abrir el modal de cantidad
+const openQuantityModal = (product) => {
+  selectedProductToAdd.value = product;
+  showQuantityModal.value = true;
+  quantity.value = 1; // Resetear la cantidad al abrir el modal
+};
+
+// Función para cerrar el modal de cantidad
+const closeQuantityModal = () => {
+  showQuantityModal.value = false;
+  selectedProductToAdd.value = null;
+};
+
+// Función para seleccionar la cantidad
+
+
+const addToMesaWithQuantity = () => {
+  if (!mesasStore.selectedMesaId) {
+    alert('Por favor, selecciona una mesa primero.');
+    return;
+  }
+  if (selectedProductToAdd.value) {
+    const productoParaAgregar = {
+      ...selectedProductToAdd.value,
+      cantidad: quantity.value
+    };
+    console.log('Cantidad seleccionada:', quantity.value);
+    console.log('Producto a agregar:', productoParaAgregar);
+    mesasStore.agregarProducto(productoParaAgregar);
+    // ... (el resto de tu código)
+  }
+};
 
 // Filtrar productos por nombre y categoría
 const filteredProducts = computed(() => {
   let result = [...productStore.products];
-  
+
   // Filtrar por categoría seleccionada
   if (selectedCategory.value) {
     const category = productStore.categories.find(c => c.name === selectedCategory.value);
@@ -104,54 +162,19 @@ const filteredProducts = computed(() => {
       result = result.filter(p => p.categoryId === category.id);
     }
   }
-  
+
   // Filtrar por texto de búsqueda
   if (productSearch.value) {
     const searchTerm = productSearch.value.toLowerCase();
-    result = result.filter(p => 
-      p.name.toLowerCase().includes(searchTerm) || 
+    result = result.filter(p =>
+      p.name.toLowerCase().includes(searchTerm) ||
       productStore.getCategoryName(p.categoryId).toLowerCase().includes(searchTerm)
     );
   }
-  
+
   return result;
 });
 
-// Métodos para categorías
-const addNewCategory = () => {
-  if (newCategoryName.value.trim()) {
-    productStore.addCategory(newCategoryName.value.trim());
-    newCategoryName.value = '';
-  }
-};
-
-const deleteCategory = (categoryId) => {
-  try {
-    productStore.deleteCategory(categoryId);
-    if (selectedCategory.value === productStore.getCategoryName(categoryId)) {
-      selectedCategory.value = '';
-    }
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-const selectCategory = (categoryName) => {
-  selectedCategory.value = selectedCategory.value === categoryName ? '' : categoryName;
-};
-
-// Métodos para productos
-const addNewProduct = () => {
-  if (newProduct.value.name.trim() && newProduct.value.price > 0) {
-    productStore.addProduct({
-      name: newProduct.value.name.trim(),
-      price: parseFloat(newProduct.value.price),
-      categoryId: newProduct.value.categoryId
-    });
-    // Reset form
-    newProduct.value = { name: '', price: 0, categoryId: null };
-  }
-};
 
 const deleteProduct = (productId) => {
   if (confirm('¿Estás seguro de eliminar este producto?')) {
@@ -159,19 +182,7 @@ const deleteProduct = (productId) => {
   }
 };
 
-const addToMesa = (product) => {
-  if (!mesasStore.selectedMesaId) {
-    alert('Por favor, selecciona una mesa primero.');
-    return;
-  }
-  mesasStore.agregarProducto({ 
-    ...product, 
-    cantidad: 1 
-  });
-  // Mostrar mensaje de confirmación
-  const mesaId = mesasStore.selectedMesaId;
-  displayConfirmation(`"${product.name}" añadido correctamente a la mesa número ${mesaId}`);
-};
+// Función original addToMesa eliminada, ahora usamos openQuantityModal y addToMesaWithQuantity
 
 // Función para obtener el color de fondo según la categoría
 const getCategoryColor = (categoryId) => {
@@ -188,196 +199,96 @@ const getCategoryColor = (categoryId) => {
 </script>
 
 <style scoped>
-.products-management {
-  display: grid;
-  grid-template-columns: 300px 1fr; /* Dos columnas: aside y contenido principal */
-  gap: 20px;
+
+
+.product-management {
   padding: 20px;
 }
 
-.left-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  height: fit-content;
-}
-
-
-
-.category-form {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.category-form input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.category-form button {
-  padding: 8px 15px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.categories-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.category-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.category-item:hover {
-  background: #f1f1f1;
-}
-
-.category-item.active {
-  background-color: #e7f3ff;
-  border-color: #86b7fe;
-}
-
-.delete-category {
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.product-management {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-}
-
-.confirmation-message {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #28a745;
-  color: white;
-  padding: 20px 30px;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  font-size: 5rem;
-  text-align: center;
-  font-weight: bold;
-}
 .filters {
   display: flex;
+  flex-direction: column; /* Apila los elementos verticalmente */
   gap: 15px;
   margin-bottom: 20px;
 }
 
-.search-input, .category-select {
-  padding: 12px 16px;
-  font-size: 1.2 rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  flex: 1;
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap; /* Permite que los botones pasen a la siguiente línea */
+  gap: 8px;
+  max-width: 100%;
 }
 
-.category-select {
-  max-width: 300px;
-}
-
-.product-form h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.product-input {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.add-product-btn {
+.category-button {
   padding: 8px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.category-button:hover {
+  background-color: var(--category-color, #eee); /* Usa el color de la categoría o un gris claro por defecto */
+  color: white;
+}
+
+.category-button.active {
   background-color: #007bff;
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  border-color: #007bff;
 }
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 products per row */
-  gap: 15px;
+  grid-template-columns: repeat(3, minmax(250px, 1fr)); /* Mínimo 250px por columna, se ajusta automáticamente */
+  gap: 20px;
 }
 
 .product-card {
-  border: 1px solid #ddd;
+  background-color: white;
   border-radius: 8px;
-  padding: 15px;
-  transition: all 0.2s;
-  transition: background-color 0.3s ease; /* Transición suave para el color */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.product-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+.product-info {
+  padding: 15px;
 }
 
 .product-info h3 {
-  margin: 0 0 5px 0;
+  margin-top: 0;
+  margin-bottom: 5px;
 }
 
 .product-info .category {
-  color: #6c757d;
+  color: #777;
   font-size: 0.9rem;
-  margin: 0 0 5px 0;
+  margin-bottom: 10px;
 }
 
 .product-info .price {
   font-weight: bold;
-  margin: 0 0 10px 0;
+  color: #333;
 }
 
 .product-actions {
   display: flex;
-  gap: 8px;
+  justify-content: space-around;
+  padding: 10px;
+  border-top: 1px solid #eee;
 }
 
 .action-btn {
-  flex: 1;
-  padding: 6px 10px;
+  padding: 8px 15px;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
   font-size: 0.9rem;
+  transition: background-color 0.3s ease;
 }
 
 .add-btn {
@@ -385,14 +296,81 @@ const getCategoryColor = (categoryId) => {
   color: white;
 }
 
+.add-btn:hover {
+  background-color: #218838;
+}
+
 .delete-btn {
   background-color: #dc3545;
   color: white;
 }
 
-@media (max-width: 768px) {
-  .products-management {
-    grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
-  }
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+/* Estilos para el modal de cantidad */
+.quantity-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1010;
+}
+
+.quantity-modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  text-align: center;
+}
+
+.quantity-modal h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.quantity-panel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.quantity-card {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.quantity-card:hover {
+  background-color: #e9ecef;
+}
+
+.close-modal-btn {
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.close-modal-btn:hover {
+  background-color: #5a6268;
 }
 </style>

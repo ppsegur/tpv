@@ -5,7 +5,10 @@
       v-for="mesa in mesasStore.mesas"
       :key="mesa.id"
       class="mesa-card"
-      :class="{ selected: mesa.id === mesasStore.selectedMesaId }"
+      :class="{
+        selected: mesa.id === mesasStore.selectedMesaId,
+        ocupada: mesa.ocupada || mesa.productos.length > 0
+      }"
       @click="selectMesa(mesa.id)"
     >
       <div class="mesa-content">
@@ -113,6 +116,7 @@ const updateMesaNombre = (id, nuevoNombre) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer; /* Asegúrate de que el cursor indique que es interactivo */
+  background-color: #f8f9fa; /* Color de fondo por defecto (libre) */
 }
 
 .mesa-card:hover {
@@ -123,7 +127,17 @@ const updateMesaNombre = (id, nuevoNombre) => {
 .mesa-card.selected {
   border-color: #86dfcc;
   color: black;
-  background-color: #e6f7ff;
+  background-color: #e6f7ff; /* Color de fondo cuando está seleccionada */
+}
+
+.mesa-card.ocupada {
+  background-color: #ffe0b2; /* Color de fondo anaranjado para mesas ocupadas */
+  border-color: #ffb347;
+}
+.mesa-card.ocupada-seleccionada {
+  background-color: #d6b3ff; /* Morado claro */
+  border-color: #a673ff; /* Borde morado más oscuro */
+  color: white; /* Texto blanco para mejor contraste */
 }
 
 .mesa-content {
@@ -179,6 +193,7 @@ const updateMesaNombre = (id, nuevoNombre) => {
   background-color: #28a745;
   color: white;
 }
+
 
 .modal {
   position: fixed;
