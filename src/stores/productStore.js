@@ -18,90 +18,79 @@ export const useProductStore = defineStore('productStore', () => {
     {id: 11, name: 'Otros' },
 
   ]);
-
+  // Agregar atributos adicionales a los productos en la constante products
   const products = ref([
     // Categoria bebidas
-    { id: 1, name: 'Coca-Cola', price: 1.2, categoryId: 1 },
-    { id: 2, name: 'Agua Mineral botella grande', price: 1.50, categoryId: 1 },
-    { id: 3, name: 'Agua Mineral botella pequeña', price: 1.00, categoryId: 1 },
-    { id: 4 , name: 'Fanta', price: 1.20, categoryId: 1 },
-    { id: 5, name: 'Aquarius', price: 1.2, categoryId: 1 },
-    { id: 9, name: 'Zumo de piña', price: 1.1, categoryId: 1 },
+    { id: 1, name: 'Coca-Cola', price: 1.2, categoryId: 1, cantidadStock: 20, minimoStock: 10 },
+    { id: 2, name: 'Agua Mineral botella grande', price: 1.50, categoryId: 1, cantidadStock: 0, minimoStock: 0 },
+    { id: 3, name: 'Agua Mineral botella pequeña', price: 1.00, categoryId: 1, cantidadStock: 0, minimoStock: 0 },
+    { id: 4 , name: 'Fanta', price: 1.20, categoryId: 1, cantidadStock: 0, minimoStock: 0 },
+    { id: 5, name: 'Aquarius', price: 1.2, categoryId: 1, cantidadStock: 0, minimoStock: 0 },
+    { id: 9, name: 'Zumo de piña', price: 1.1, categoryId: 1, cantidadStock: 0, minimoStock: 0 },
 
     // Categoria cervezas 
-    { id: 6, name: 'Botellin', price: 1.2, categoryId: 2 },
-    { id: 7, name: 'Litrona', price: 2.4, categoryId: 2 },
-    { id: 8, name: 'Tercio', price: 2.2, categoryId: 2 },
+    { id: 6, name: 'Botellin', price: 1.2, categoryId: 2, cantidadStock: 0, minimoStock: 0 },
+    { id: 7, name: 'Litrona', price: 2.4, categoryId: 2, cantidadStock: 0, minimoStock: 0 },
+    { id: 8, name: 'Tercio', price: 2.2, categoryId: 2, cantidadStock: 0, minimoStock: 0 },
 
     // Categoria pan
-    { id: 10, name: 'Pan de barra', price: 0.55, categoryId: 3 },
-    { id: 11, name: 'Pan de molde', price: 1.60, categoryId: 3 },
-    { id: 12, name: 'Bollo', price: 0.50, categoryId: 3 },
-    { id: 13, name: 'Bollito', price: 0.35, categoryId: 3 },
-    { id: 14, name: 'Viena', price: 0.5, categoryId: 3 },
-    { id: 15, name: 'Pan de kilo', price: 2, categoryId: 3 },
-    { id: 16, name: 'Chulo', price: 0.60, categoryId: 3 },
-    { id: 17, name: 'Chulito', price: 0.40, categoryId: 3 },
-    { id: 18, name: 'pack Integral', price: 2, categoryId: 3 },
-    { id: 19, name: 'Andaluza', price: 0.45, categoryId: 3 },
-    { id: 20, name: 'Picado', price: 0.5, categoryId: 3 },
-    { id: 21, name: 'Cahapata', price: 0.45, categoryId: 3 },
-    { id: 22, name: 'Mollete', price: 0.5, categoryId: 3 },
-    { id: 23, name: 'Molletito', price: 0.35, categoryId: 3 },
-    { id: 24, name: 'Pepito', price: 0.35, categoryId: 3 },
-    { id: 25, name: 'Bollo integral', price: 0.60, categoryId: 3 },
-    { id: 26, name: 'Bollito integral', price: 0.40, categoryId: 3 },
+    { id: 10, name: 'Pan de barra', price: 0.55, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 11, name: 'Pan de molde', price: 1.60, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 12, name: 'Bollo', price: 0.50, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 13, name: 'Bollito', price: 0.35, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 14, name: 'Viena', price: 0.5, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 15, name: 'Pan de kilo', price: 2, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 16, name: 'Chulo', price: 0.60, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 17, name: 'Chulito', price: 0.40, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 18, name: 'pack Integral', price: 2, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 19, name: 'Andaluza', price: 0.45, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 20, name: 'Picado', price: 0.5, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 21, name: 'Cahapata', price: 0.45, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 22, name: 'Mollete', price: 0.5, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 23, name: 'Molletito', price: 0.35, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 24, name: 'Pepito', price: 0.35, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 25, name: 'Bollo integral', price: 0.60, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
+    { id: 26, name: 'Bollito integral', price: 0.40, categoryId: 3, cantidadStock: 0, minimoStock: 0 },
    
     // Categoria chacinas
-  
-    { id: 27, name: 'Jamon 50 gramos ', price:6, categoryId: 4 },
-    { id: 28, name: 'Jamon 100 gramos ', price:11 , categoryId: 4 },
-    { id: 29, name: 'chicharrón 100 gramos ', price: 3.50, categoryId: 4 },
-    { id: 30, name: 'chicharrón 50 gramos ', price: 2.00, categoryId: 4 },
-
+    { id: 27, name: 'Jamon 50 gramos ', price:6, categoryId: 4, cantidadStock: 0, minimoStock: 0 },
+    { id: 28, name: 'Jamon 100 gramos ', price:11 , categoryId: 4, cantidadStock: 0, minimoStock: 0 },
+    { id: 29, name: 'chicharrón 100 gramos ', price: 3.50, categoryId: 4, cantidadStock: 0, minimoStock: 0 },
+    { id: 30, name: 'chicharrón 50 gramos ', price: 2.00, categoryId: 4, cantidadStock: 0, minimoStock: 0 },
 
     // Categoria conservas
-
-    { id: 31, name: 'Melva consemur', price: 4, categoryId: 5 },
-    { id: 32, name: 'Sardinas', price: 3, categoryId: 5 },
-    { id: 33, name: 'Atun', price: 2.50, categoryId: 5 },
-    { id: 34, name: 'Boquerones', price: 4.50, categoryId: 5 },
-    { id: 35, name: 'Berberechos', price: 3.50, categoryId: 5 },
-    { id: 36, name: 'Mejillones', price: 3.50, categoryId: 5 },
-  
+    { id: 31, name: 'Melva consemur', price: 4, categoryId: 5, cantidadStock: 0, minimoStock: 0 },
+    { id: 32, name: 'Sardinas', price: 3, categoryId: 5, cantidadStock: 0, minimoStock: 0 },
+    { id: 33, name: 'Atun', price: 2.50, categoryId: 5, cantidadStock: 0, minimoStock: 0 },
+    { id: 34, name: 'Boquerones', price: 4.50, categoryId: 5, cantidadStock: 0, minimoStock: 0 },
+    { id: 35, name: 'Berberechos', price: 3.50, categoryId: 5, cantidadStock: 0, minimoStock: 0 },
+    { id: 36, name: 'Mejillones', price: 3.50, categoryId: 5, cantidadStock: 0, minimoStock: 0 },
 
     // Categoria tapas
-    { id: 37, name: 'salchichon', price: 3.5, categoryId: 6 },
-    { id: 38, name: 'Chicharron', price: 3.50, categoryId: 6 },
-    { id: 39, name: 'jamon', price: 6, categoryId: 6 },
-    { id: 40, name: 'queso normal ', price: 4, categoryId: 6 },
-    { id: 41, name: 'Queso especial', price: 5.5, categoryId: 6 },
-    { id: 42, name: 'Pulguita', price: 1.50, categoryId: 6 },
+    { id: 37, name: 'salchichon', price: 3.5, categoryId: 6, cantidadStock: 0, minimoStock: 0 },
+    { id: 38, name: 'Chicharron', price: 3.50, categoryId: 6, cantidadStock: 0, minimoStock: 0 },
+    { id: 39, name: 'jamon', price: 6, categoryId: 6, cantidadStock: 0, minimoStock: 0 },
+    { id: 40, name: 'queso normal ', price: 4, categoryId: 6, cantidadStock: 0, minimoStock: 0 },
+    { id: 41, name: 'Queso especial', price: 5.5, categoryId: 6, cantidadStock: 0, minimoStock: 0 },
+    { id: 42, name: 'Pulguita', price: 1.50, categoryId: 6, cantidadStock: 0, minimoStock: 0 },
 
     // Categoria medias
-    { id: 43, name: 'Medias de jamon', price: 8, categoryId: 7 },
-    { id: 44, name: 'Medias de chicharron', price: 5, categoryId: 7 },
-    { id: 45, name: 'Medias de salchichon', price: 5.5, categoryId: 7 },
-    { id: 46, name: 'Medias de queso normal', price: 5, categoryId: 7 },
-    { id: 47, name: 'Medias de queso especial', price: 7, categoryId: 7 },
+    { id: 43, name: 'Medias de jamon', price: 8, categoryId: 7, cantidadStock: 0, minimoStock: 0 },
+    { id: 44, name: 'Medias de chicharron', price: 5, categoryId: 7, cantidadStock: 0, minimoStock: 0 },
+    { id: 45, name: 'Medias de salchichon', price: 5.5, categoryId: 7, cantidadStock: 0, minimoStock: 0 },
+    { id: 46, name: 'Medias de queso normal', price: 5, categoryId: 7, cantidadStock: 0, minimoStock: 0 },
+    { id: 47, name: 'Medias de queso especial', price: 7, categoryId: 7, cantidadStock: 0, minimoStock: 0 },
 
     // Categoria san blas
-    { id: 48, name: 'Caja pequeña ', price: 7, categoryId: 8 },
-    { id: 49, name: 'Caja mediana ', price: 9.50, categoryId: 8 },
-    { id: 50, name: 'Cortadillo', price: 1, categoryId: 8 },
-    { id: 51, name: 'Pastel pequeño', price: 2.2, categoryId: 8 },
-    { id: 52, name: 'Pastel', price: 2.7, categoryId: 8 },
-    { id: 53, name: 'torrija p', price: 1.2, categoryId: 8 },
-    { id: 54, name: 'Torrija grande', price: 2.5, categoryId: 8 },
-    
-    // Categoria productos seleccion
-    
-
-
-
- 
+    { id: 48, name: 'Caja pequeña ', price: 7, categoryId: 8, cantidadStock: 0, minimoStock: 0 },
+    { id: 49, name: 'Caja mediana ', price: 9.50, categoryId: 8, cantidadStock: 0, minimoStock: 0 },
+    { id: 50, name: 'Cortadillo', price: 1, categoryId: 8, cantidadStock: 0, minimoStock: 0 },
+    { id: 51, name: 'Pastel pequeño', price: 2.2, categoryId: 8, cantidadStock: 0, minimoStock: 0 },
+    { id: 52, name: 'Pastel', price: 2.7, categoryId: 8, cantidadStock: 0, minimoStock: 0 },
+    { id: 53, name: 'torrija p', price: 1.2, categoryId: 8, cantidadStock: 0, minimoStock: 0 },
+    { id: 54, name: 'Torrija grande', price: 2.5, categoryId: 8, cantidadStock: 0, minimoStock: 0 },
   ]);
-
+  
   // Acciones para categorías
   const addCategory = (categoryName) => {
     const newCategory = {

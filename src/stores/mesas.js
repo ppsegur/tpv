@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { reactive } from 'vue';
 
 export const useMesasStore = defineStore('mesas', {
   state: () => ({
@@ -75,7 +76,19 @@ export const useMesasStore = defineStore('mesas', {
         mesa.productos.splice(productoIndex, 1);
       }
     },
-
+    actualizarStockAlLiberarMesa(id) {
+      const mesa = this.mesas.find(m => m.id === id);
+      if (!mesa) return;
+    
+      mesa.productos.forEach(producto => {
+        const productInStore = productStore.products.find(p => p.id === producto.id);
+        if (productInStore && productInStore.cantidadStock !== undefined) {
+          const isPeso = this.productoPorPeso(producto);
+          const cantidadARestar = isPeso ? producto.gramos / 1000 : producto.cantidad;
+          productInStore.cantidadStock -= cantidadARestar;
+        }
+      });
+    },
     limpiarProductosMesa(mesaId) {
       const mesa = this.mesas.find(m => m.id === mesaId);
       if (!mesa) return;
@@ -89,6 +102,7 @@ export const useMesasStore = defineStore('mesas', {
           return sum + precio;
         }, 0);
 
+        
         this.historial.push({
           mesaId,
           fecha: new Date().toISOString(),

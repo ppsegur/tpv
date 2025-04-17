@@ -25,6 +25,8 @@
                 <th>Nombre</th>
                 <th>Categoría</th>
                 <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Minimo en stock</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -33,6 +35,9 @@
                 <td>{{ producto.name }}</td>
                 <td>{{ getCategoryName(producto.categoryId) }}</td>
                 <td>{{ producto.price.toFixed(2) }}€</td>
+                <td>{{ producto.cantidadStock }}</td>
+                <td>{{ producto.minimoStock }}</td>
+
                 <td>
                   <button @click="editarProducto(producto)">Editar</button>
                   <button @click="eliminarProducto(producto.id)">Eliminar</button>
@@ -43,13 +48,49 @@
         </main>
       </div>
     </div>
+    <div class="modal" v-if="showModal">
+  <div class="modal-content">
+    <h2>Editar Producto</h2>
+    <label>
+      Nombre:
+      <input type="text" v-model="productoEditado.name" />
+    </label>
+    <label>
+      Categoría:
+      <select v-model="productoEditado.categoryId">
+        <option v-for="categoria in categoriasUnicas" :key="categoria.id" :value="categoria.id">
+          {{ categoria.name }}
+        </option>
+      </select>
+    </label>
+    <label>
+      Precio:
+      <input type="number" v-model="productoEditado.price" />
+    </label>
+    <label>
+      Mínimo en Stock:
+      <input type="number" v-model="productoEditado.minimoStock" />
+    </label>
+    <label>
+      Cantidad en Stock:
+      <input type="number" v-model="productoEditado.cantidadStock" />
+    </label>
+    <div class="modal-buttons">
+      <button @click="guardarCambios">Guardar</button>
+      <button @click="cerrarModal">Cancelar</button>
+    </div>
+  </div>
+</div>
+
   </template>
   
   <script setup>
+
   import { ref, computed } from 'vue';
 import { useProductStore } from '../../stores/productStore';
 import FormManagement from '../FormManagement.vue';
-  const productStore = useProductStore();
+
+const productStore = useProductStore();
   const busqueda = ref('');
   const categoriaSeleccionada = ref('');
   const showModal = ref(false); // <-- Añade esto
@@ -67,14 +108,14 @@ import FormManagement from '../FormManagement.vue';
   
   // Filtrar productos
   const productosFiltrados = computed(() => {
-    return productStore.products.filter(producto => {
-      const coincideBusqueda = producto.name.toLowerCase().includes(busqueda.value.toLowerCase());
-      const coincideCategoria = categoriaSeleccionada.value
-        ? producto.categoryId === categoriaSeleccionada.value
-        : true;
-      return coincideBusqueda && coincideCategoria;
-    });
+  return productStore.products.filter(producto => {
+    const coincideBusqueda = producto.name.toLowerCase().includes(busqueda.value.toLowerCase());
+    const coincideCategoria = categoriaSeleccionada.value
+      ? producto.categoryId === categoriaSeleccionada.value
+      : true;
+    return coincideBusqueda && coincideCategoria;
   });
+});
   
   // Helper para nombre de categoría
   const getCategoryName = (categoryId) => {
@@ -198,39 +239,64 @@ button:last-child {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro con transparencia */
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
+  z-index: 999;
 }
 
 .modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 30px;
   width: 90%;
-  max-width: 400px;
-  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .modal-content h2 {
-  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  text-align: center;
+  color: #333;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 10px;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 4px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
 .modal-buttons {
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
-  justify-content: center;
 }
 
 .modal-buttons button {
-  padding: 10px 15px;
+  padding: 10px 18px;
+  font-weight: bold;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
 .modal-buttons button:first-child {
@@ -238,8 +304,28 @@ button:last-child {
   color: white;
 }
 
+.modal-buttons button:first-child:hover {
+  background-color: #0056b3;
+}
+
 .modal-buttons button:last-child {
   background-color: #dc3545;
   color: white;
 }
+
+.modal-buttons button:last-child:hover {
+  background-color: #b02a37;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 </style>

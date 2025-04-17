@@ -82,8 +82,13 @@ const mesasStore = useMesasStore();
 const showModal = ref(false);
 const selectedMesaId = ref(null);
 
+
+
 const liberarMesa = (id) => {
-  mesasStore.limpiarProductosMesa(id);
+  if (confirm('¿Estás seguro de que quieres liberar esta mesa?')) {
+    mesasStore.limpiarProductosMesa(id);
+    mesasStore.actualizarStockAlLiberarMesa(id); // Actualiza el stock
+  }
 };
 
 const selectedProductos = computed(() => {
@@ -148,14 +153,15 @@ const decreaseQuantity = (index) => {
 };
 
 const addMesa = () => {
-  const nuevaMesa = {
-    id: mesasStore.mesas.length + 1,
+  const nuevoId = Date.now(); // o usa una librería como uuid
+  mesasStore.mesas.push({
+    id: nuevoId,
     nombre: '',
     productos: [],
     ocupada: false
-  };
-  mesasStore.mesas.push(nuevaMesa);
+  });
 };
+
 
 const agregarProductoAMesa = (producto) => {
   const mesa = mesasStore.mesas.find(m => m.id === mesasStore.selectedMesaId);
