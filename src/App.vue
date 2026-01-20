@@ -1,31 +1,19 @@
 <template>
   <div id="app">
-    <NavBar :class="{'menu-open': menuOpen}" @toggle-menu="toggleMenu" />
+    <NavBar />
     <router-view />
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      menuOpen: false,
-    };
-  },
-  methods: {
-    toggleMenu() {
-      this.menuOpen = !this.menuOpen;
-    },
-  },
-};
+<script setup>
+import NavBar from './components/Nav-bar.vue'
 </script>
 
 <style scoped>
 #app {
-  /* Removed fixed min-width layout and made this responsive */
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
 }
 </style>
