@@ -1,38 +1,69 @@
 <template>
-  <nav>
+  <nav class="nav-bar" :class="{ 'is-open': menuOpen }" @click.self="handleOutsideClick">
     <div class="logo">
-      <img src="/azazahrLogo.png" alt="Logo" />
+      <img :src="logoSrc" alt="Logo" />
     </div>
-    <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false">
-      <span class="bar"></span>
+    <button 
+      class="menu-toggle" 
+      @click="toggleMenu" 
+      :aria-expanded="menuOpen"
+    >
+      Menu
     </button>
-    <ul class="nav-links">
-      <li><router-link to="/" aria-label="Inicio">Inicio</router-link></li>
-      <li><router-link to="/historial" aria-label="Historial">Historial</router-link></li>
-      <li><router-link to="/gestion" aria-label="Gesti��n">Gestión</router-link></li>
+    <ul v-if="menuOpen" class="menu">
+      <li v-for="item in menuItems" :key="item.id">
+        <a :href="item.link">{{ item.label }}</a>
+      </li>
     </ul>
   </nav>
 </template>
 
 <script>
 export default {
-  name: 'NavBar',
+  data() {
+    return {
+      menuOpen: false,
+      logoSrc: '/azazahrLogo.png',
+      menuItems: [
+        { id: 1, label: 'Home', link: '#' },
+        { id: 2, label: 'About', link: '#' },
+        { id: 3, label: 'Services', link: '#' },
+        { id: 4, label: 'Contact', link: '#' },
+      ],
+    };
+  },
+
+  methods: {
+    toggleMenu() {
+      this.menuOpen = !this.menuOpen;
+    },
+
+    handleOutsideClick(event) {
+      if (this.menuOpen && !this.$el.contains(event.target)) {
+        this.menuOpen = false;
+      }
+    },
+  },
 };
 </script>
 
 <style scoped>
-nav {
-  background: var(--ui-surface);
-  color: var(--ui-text);
+.nav-bar {
+  --ui-background: #fff;
+  --ui-text: #333;
+  --ui-border: #ccc;
 }
 
-.nav-links a {
-  color: var(--ui-text);
-  text-decoration: none;
+.nav-bar.is-open {
+  --ui-background: #f0f0f0;
 }
 
-.nav-links a:hover,
-.nav-links a:active {
-  color: var(--ui-primary);
+.menu-toggle {
+  cursor: pointer;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
 }
 </style>
