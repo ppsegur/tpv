@@ -1,29 +1,19 @@
 <template>
-  <div class="container">
-    <NavBar 
-      :aria-expanded="menuOpen"
-      @click="menuOpen = !menuOpen"
-      :class="{ open: menuOpen }">
-    </NavBar>
+  <div id="app">
+    <NavBar />
     <router-view />
   </div>
 </template>
 
 <script setup>
-import NavBar from './components/Nav-bar.vue';
-
-const menuOpen = ref(false);
+import NavBar from './components/Nav-bar.vue'
 </script>
 
 <style scoped>
-.container {
+#app {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 16px;
-}
-
-.open {
-  /* Add your responsive styles here */
+  width: 100%;
+  min-height: 100vh;
 }
 </style>
