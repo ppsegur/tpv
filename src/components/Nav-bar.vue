@@ -1,8 +1,15 @@
 <template>
   <nav>
-    <button class="hamburger" @click="toggleMenu">☰</button>
-    <div :class="{'open': menuOpen}" class="nav-links">
-      <router-link v-for="link in links" :key="link.text" :to="link.href">{{ link.text }}</router-link>
+    <div class="navbar">
+      <img src="@/assets/logo.png" alt="Logo" class="logo" />
+      <div class="menu-toggle" @click="toggleMenu">
+        <div :class="{'open': menuOpen}"></div>
+      </div>
+      <ul :class="{'active': menuOpen}">
+        <li><router-link to="/">Home</router-link></li>
+        <li><router-link to="/historial">Historial</router-link></li>
+        <li><router-link to="/gestion">Gestión</router-link></li>
+      </ul>
     </div>
   </nav>
 </template>
@@ -12,51 +19,52 @@ export default {
   data() {
     return {
       menuOpen: false,
-      links: [
-        { text: 'Home', href: '/' },
-        { text: 'About', href: '/about' },
-        { text: 'Contact', href: '/contact' },
-      ],
     };
   },
   methods: {
     toggleMenu() {
       this.menuOpen = !this.menuOpen;
-      this.$emit('toggle-menu', this.menuOpen);
     },
   },
 };
 </script>
 
 <style scoped>
-nav {
+.navbar {
   display: flex;
   justify-content: space-between;
-  background: var(--bg-color);
-  border-radius: var(--border-radius);
+  background-color: var(--ui-background);
+  padding: 1rem;
 }
-.hamburger {
-  background: transparent;
-  border: none;
-  color: var(--text-color);
-  font-size: 24px;
+
+.logo {
+  height: 40px;
+}
+
+.menu-toggle {
   cursor: pointer;
+  display: none;
 }
-.nav-links {
+
+ul {
   display: flex;
-  flex-direction: column;
-  transition: all 0.3s;
+  list-style: none;
 }
-.nav-links.open {
-  display: block;
+
+li {
+  margin: 0 1rem;
 }
-.nav-links a {
-  color: var(--link-color);
-  padding: 10px;
-  text-decoration: none;
-}
-.nav-links a:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--focus-color);
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+  ul {
+    display: none;
+    flex-direction: column;
+  }
+  ul.active {
+    display: block;
+  }
 }
 </style>
