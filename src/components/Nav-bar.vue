@@ -1,87 +1,70 @@
 <template>
   <nav>
-    <router-link to="/" class="logo">
-      <img src="/azazahrLogo.png" alt="Logo" />
-    </router-link>
-    <div class="hamburger" @click="toggleMenu">
-      <div :class="{'active': menuOpen}" class="line"></div>
-      <div :class="{'active': menuOpen}" class="line"></div>
-      <div :class="{'active': menuOpen}" class="line"></div>
-    </div>
-    <div v-if="menuOpen" class="menu">
-      <router-link v-for="item in menuItems" :key="item.name" :to="item.path" @click="handleMenuClick">
-        {{ item.name }}
-      </router-link>
+    <div @click.outside="closeMenu">
+      <img :src="logo" alt="Logo" />
+      <button @click="toggleMenu" :aria-expanded="menuOpen">Menu</button>
+      <ul v-if="menuOpen">
+        <li><router-link to="/">Home</router-link></li>
+        <li><router-link to="/historial">Historial</router-link></li>
+        <li><router-link to="/gestion">Gestión</router-link></li>
+      </ul>
     </div>
   </nav>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      menuOpen: false,
-      menuItems: [
-        { name: 'Home', path: '/' },
-        { name: 'About', path: '/about' },
-        { name: 'Contact', path: '/contact' },
-      ],
-    };
-  },
-  methods: {
-    toggleMenu() {
-      this.menuOpen = !this.menuOpen;
-    },
-    handleMenuClick() {
-      this.menuOpen = false;
-    },
-    closeMenuOnOutsideClick(event) {
-      if (this.menuOpen && !this.$el.contains(event.target)) {
-        this.menuOpen = false;
-      }
-    },
-  },
-  mounted() {
-    document.addEventListener('click', this.closeMenuOnOutsideClick);
-    this.$router.afterEach(() => {
-      this.menuOpen = false;
-    });
-  },
-  beforeDestroy() {
-    document.removeEventListener('click', this.closeMenuOnOutsideClick);
-  },
+<script setup>
+import { ref, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
+
+const menuOpen = ref(false);
+const logo = '/azazahrLogo.png';
+const router = useRouter();
+
+const toggleMenu = () => {
+  menuOpen.value = !menuOpen.value;
 };
+
+const closeMenu = () => {
+  menuOpen.value = false;
+};
+
+const handleRouteChange = () => {
+  closeMenu();
+};
+
+const closeOnOutsideClick = (event) => {
+  const target = event.target;
+  if (target.closest('nav') === null) {
+    closeMenu();
+  }
+};
+
+const applyListeners = () => {
+  document.addEventListener('click', closeOnOutsideClick, true);
+  document.addEventListener('touchstart', closeOnOutsideClick, true);
+};
+
+// Close menu on route change
+router.afterEach(handleRouteChange);
+// Set up listeners on component mount
+applyListeners();
+
+// Clean up listeners on unmount
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeOnOutsideClick, true);
+  document.removeEventListener('touchstart', closeOnOutsideClick, true);
+});
 </script>
 
 <style scoped>
 nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--ui-background);
-  padding: var(--ui-padding);
+  background-color: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow);
 }
-.logo img {
-  max-width: 100px;
-}
-.hamburger {
-  cursor: pointer;
-}
-.line {
-  width: 30px;
-  height: 3px;
-  background-color: var(--ui-color);
-  margin: 5px 0;
-  transition: all 0.3s;
-}
-.line.active {
-  background-color: var(--ui-active-color);
-}
-.menu {
-  display: flex;
-  flex-direction: column;
-}
-.menu a {
-  padding: var(--ui-link-padding);
+ul {
+  background-color: var(--ui-surface);
+  color: var(--ui-text);
 }
 </style>
