@@ -1,70 +1,38 @@
 <template>
   <nav>
-    <div class="navbar">
-      <img src="@/assets/logo.png" alt="Logo" class="logo" />
-      <div class="menu-toggle" @click="toggleMenu">
-        <div :class="{'open': menuOpen}"></div>
-      </div>
-      <ul :class="{'active': menuOpen}">
-        <li><router-link to="/">Home</router-link></li>
-        <li><router-link to="/historial">Historial</router-link></li>
-        <li><router-link to="/gestion">Gestión</router-link></li>
-      </ul>
+    <div class="logo">
+      <img src="/azazahrLogo.png" alt="Logo" />
     </div>
+    <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+      <span class="bar"></span>
+    </button>
+    <ul class="nav-links">
+      <li><router-link to="/" aria-label="Inicio">Inicio</router-link></li>
+      <li><router-link to="/historial" aria-label="Historial">Historial</router-link></li>
+      <li><router-link to="/gestion" aria-label="Gesti��n">Gestión</router-link></li>
+    </ul>
   </nav>
 </template>
 
 <script>
 export default {
-  data() {
-    return {
-      menuOpen: false,
-    };
-  },
-  methods: {
-    toggleMenu() {
-      this.menuOpen = !this.menuOpen;
-    },
-  },
+  name: 'NavBar',
 };
 </script>
 
 <style scoped>
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  background-color: var(--ui-background);
-  padding: 1rem;
+nav {
+  background: var(--ui-surface);
+  color: var(--ui-text);
 }
 
-.logo {
-  height: 40px;
+.nav-links a {
+  color: var(--ui-text);
+  text-decoration: none;
 }
 
-.menu-toggle {
-  cursor: pointer;
-  display: none;
-}
-
-ul {
-  display: flex;
-  list-style: none;
-}
-
-li {
-  margin: 0 1rem;
-}
-
-@media (max-width: 768px) {
-  .menu-toggle {
-    display: block;
-  }
-  ul {
-    display: none;
-    flex-direction: column;
-  }
-  ul.active {
-    display: block;
-  }
+.nav-links a:hover,
+.nav-links a:active {
+  color: var(--ui-primary);
 }
 </style>
