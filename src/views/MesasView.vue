@@ -9,7 +9,8 @@
         :class="{
           selected: mesa.id === mesasStore.selectedMesaId,
           ocupada: mesa.ocupada || mesa.productos.length > 0,
-          'selected-ocupada': (mesa.id === mesasStore.selectedMesaId) && (mesa.ocupada || mesa.productos.length > 0)
+          'selected-ocupada': (mesa.id === mesasStore.selectedMesaId) && (mesa.ocupada || mesa.productos.length > 0),
+          'not-selected': mesasStore.selectedMesaId && mesa.id !== mesasStore.selectedMesaId
         }"
         @click="selectMesa(mesa.id)"
       >
@@ -111,7 +112,11 @@
       </button>
     </div>
 
-    <ProductList @productoSeleccionado="agregarProductoAMesa" />
+    <div v-if="!mesasStore.selectedMesaId" class="no-table-selected">
+      <p>👆 Selecciona una mesa para ver los productos disponibles</p>
+    </div>
+
+    <ProductList v-if="mesasStore.selectedMesaId" @productoSeleccionado="agregarProductoAMesa" />
   </div>
 </template>
 
@@ -242,9 +247,14 @@ const actualizarPrecioPorGramos = (producto) => {
 
 /* Estilo del título */
 .mesas-container h1 {
-  margin-bottom: 20px; /* Espacio entre el título y las mesas */
-  font-size: 2rem; /* Tamaño del título */
-  color: #333; /* Color del texto */
+  margin-bottom: 30px; /* Espacio entre el título y las mesas */
+  font-size: 2.5rem; /* Tamaño del título */
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Contenedor de las mesas */
@@ -264,11 +274,18 @@ const actualizarPrecioPorGramos = (producto) => {
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
   cursor: pointer;
   height: 100%; /* Asegurar que todas las tarjetas tienen la misma altura */
   min-height: 180px; /* Altura mínima para las tarjetas */
   background-color: #fff; /* Fondo blanco */
+}
+
+/* Efecto transparente/vidrio para mesas no seleccionadas */
+.mesa-card.not-selected {
+  opacity: 0.4;
+  filter: blur(1px);
+  transform: scale(0.98);
 }
 
 /* Contenido de las tarjetas */
@@ -373,10 +390,11 @@ const actualizarPrecioPorGramos = (producto) => {
 
 /* Estilo para mesas seleccionadas */
 .mesa-card.selected {
-  background-color: #8eb2d8; /* Color de fondo para la mesa seleccionada */
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%); /* Gradiente azul para la mesa seleccionada */
   color: white; /* Cambiar el color del texto */
-  border-color: #0056b3; /* Cambiar el color del borde */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir un efecto de sombra */
+  border: 3px solid #0056b3; /* Borde más grueso */
+  box-shadow: 0 8px 24px rgba(0, 86, 179, 0.4), 0 0 20px rgba(74, 144, 226, 0.3); /* Sombra más prominente con brillo */
+  transform: scale(1.05); /* Aumentar ligeramente el tamaño */
 }
 
 /* Estilo para mesas ocupadas */
@@ -388,10 +406,11 @@ const actualizarPrecioPorGramos = (producto) => {
 
 /* Estilo para mesas ocupadas y seleccionadas */
 .mesa-card.selected-ocupada {
-  background-color: #de5765ae; /* Rojo para mesas ocupadas y seleccionadas */
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); /* Gradiente rojo para mesas ocupadas y seleccionadas */
   color: white;
-  border-color: #bd2130;
-  box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+  border: 3px solid #bd2130;
+  box-shadow: 0 8px 24px rgba(220, 53, 69, 0.4), 0 0 20px rgba(231, 76, 60, 0.3);
+  transform: scale(1.05);
 }
 
 .mesa-card.ocupada h2,
@@ -407,9 +426,14 @@ const actualizarPrecioPorGramos = (producto) => {
 }
 
 /* Efectos hover */
-.mesa-card:hover {
-  transform: scale(1.02); /* Aumentar ligeramente el tamaño */
+.mesa-card:hover:not(.not-selected) {
+  transform: scale(1.05); /* Aumentar ligeramente el tamaño */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombra */
+}
+
+.mesa-card.not-selected:hover {
+  opacity: 0.6; /* Ligeramente menos transparente al hacer hover */
+  filter: blur(0.5px);
 }
 
 /* Responsive para pantallas más pequeñas */
@@ -801,5 +825,24 @@ const actualizarPrecioPorGramos = (producto) => {
 
 .btn-add-mesa .icon {
   font-size: 1.2rem;
+}
+
+/* Mensaje cuando no hay mesa seleccionada */
+.no-table-selected {
+  text-align: center;
+  margin: 40px auto;
+  padding: 30px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  animation: fadeIn 0.5s ease;
+}
+
+.no-table-selected p {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1976d2;
+  margin: 0;
 }
 </style>
