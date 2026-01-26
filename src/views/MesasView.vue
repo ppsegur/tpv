@@ -175,9 +175,11 @@ const removeProduct = (index) => {
 };
 
 const clearProducts = () => {
-  if (selectedMesaId.value) {
-    mesasStore.limpiarProductosMesa(selectedMesaId.value);
-    closeModal();
+  if (mesasStore.selectedMesaId) {
+    mesasStore.limpiarProductosMesa(mesasStore.selectedMesaId);
+    if (selectedMesaId.value) {
+      closeModal();
+    }
   }
 };
 
@@ -254,7 +256,6 @@ const actualizarPrecioPorGramos = (producto) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Contenedor de las mesas */
@@ -426,9 +427,14 @@ const actualizarPrecioPorGramos = (producto) => {
 }
 
 /* Efectos hover */
-.mesa-card:hover:not(.not-selected) {
+.mesa-card:hover:not(.not-selected):not(.selected):not(.selected-ocupada) {
   transform: scale(1.05); /* Aumentar ligeramente el tamaño */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombra */
+}
+
+.mesa-card.selected:hover,
+.mesa-card.selected-ocupada:hover {
+  transform: scale(1.08); /* Aumentar más el tamaño para mesas seleccionadas */
 }
 
 .mesa-card.not-selected:hover {
