@@ -55,33 +55,60 @@
     </div>
 
     <!-- Modal para seleccionar cantidad -->
-    <div v-if="showQuantityModal" class="modal-overlay">
+    <div v-if="showQuantityModal" class="modal-overlay" @click.self="closeQuantityModal">
       <div class="modal">
-        <h2>Selecciona la cantidad para "{{ selectedProduct.name }}"</h2>
-        <div class="quantity-options">
-          <button 
-            v-for="quantity in 9" 
-            :key="quantity" 
-            @click="addProductToMesa(quantity)"
-            class="quantity-btn"
-          >
-            {{ quantity }}
-          </button>
+        <div class="modal-header">
+          <h2>Selecciona la cantidad</h2>
+          <button class="close-icon" @click="closeQuantityModal" aria-label="Cerrar">×</button>
         </div>
-        <button @click="closeQuantityModal" class="close-btn">Cancelar</button>
+        <div class="modal-body">
+          <p class="product-name">{{ selectedProduct.name }}</p>
+          <div class="quantity-grid">
+            <button 
+              v-for="quantity in 9" 
+              :key="quantity" 
+              @click="addProductToMesa(quantity)"
+              class="quantity-btn"
+            >
+              {{ quantity }}
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="closeQuantityModal" class="btn-cancel">Cancelar</button>
+        </div>
       </div>
     </div>
+    
     <!-- Modal para productos por peso -->
-<div v-if="showWeightModal" class="modal-overlay">
-  <div class="modal">
-    <h2>Introduce el peso (en gramos) para "{{ selectedProduct.name }}"</h2>
-    <input type="number" v-model="enteredWeight" min="1" class="search-input" />
-    <div style="margin-top: 20px;">
-      <button @click="addProductByWeight" class="quantity-btn">Aceptar</button>
-      <button @click="closeWeightModal" class="close-btn">Cancelar</button>
+    <div v-if="showWeightModal" class="modal-overlay" @click.self="closeWeightModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Introduce el peso</h2>
+          <button class="close-icon" @click="closeWeightModal" aria-label="Cerrar">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="product-name">{{ selectedProduct.name }}</p>
+          <div class="weight-input-container">
+            <label for="weight-input">Peso en gramos:</label>
+            <input 
+              id="weight-input"
+              type="number" 
+              v-model="enteredWeight" 
+              min="1" 
+              placeholder="Ej: 250" 
+              class="weight-input"
+              @keyup.enter="addProductByWeight"
+              autofocus
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="closeWeightModal" class="btn-cancel">Cancelar</button>
+          <button @click="addProductByWeight" class="btn-accept">Aceptar</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
 
     <!-- Mensaje de confirmación -->
@@ -325,20 +352,42 @@ const closeWeightModal = () => {
 }
 
 .action-btn {
-  padding: 8px 12px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn:active {
+  transform: translateY(0);
 }
 
 .add-btn {
-  background-color: #28a745;
+  background-color: #198754;
   color: white;
+}
+
+.add-btn:hover {
+  background-color: #157347;
+  box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
 }
 
 .delete-btn {
   background-color: #dc3545;
   color: white;
+}
+
+.delete-btn:hover {
+  background-color: #bb2d3b;
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 .modal-overlay {
@@ -347,46 +396,214 @@ const closeWeightModal = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 999;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal {
   background: white;
-  padding: 30px;
-  border-radius: 10px;
-  text-align: center;
-  max-width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 500px;
+  max-width: 95%;
+  animation: slideIn 0.3s ease;
 }
 
-.quantity-options {
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.close-icon {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6c757d;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  margin: 20px 0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-icon:hover {
+  background-color: #f8f9fa;
+  color: #dc3545;
+}
+
+.modal-body {
+  padding: 28px;
+}
+
+.product-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0d6efd;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.quantity-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
 .quantity-btn {
-  padding: 10px 15px;
-  background-color: #007bff;
+  padding: 16px;
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
   border: none;
   color: white;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: 12px;
+  font-size: 1.3rem;
+  font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2);
 }
 
-.close-btn {
+.quantity-btn:hover {
+  background: linear-gradient(135deg, #0b5ed7 0%, #0a58ca 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+}
+
+.quantity-btn:active {
+  transform: translateY(0);
+}
+
+.weight-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.weight-input-container label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.weight-input {
+  padding: 14px 16px;
+  font-size: 1.1rem;
+  border: 2px solid #ced4da;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.weight-input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.modal-footer {
+  padding: 20px 28px;
+  border-top: 2px solid #e9ecef;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-accept {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel {
   background-color: #6c757d;
   color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background-color: #5c636a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-accept {
+  background-color: #198754;
+  color: white;
+}
+
+.btn-accept:hover {
+  background-color: #157347;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+}
+
+.btn-cancel:active,
+.btn-accept:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 576px) {
+  .quantity-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .quantity-btn {
+    padding: 14px;
+    font-size: 1.1rem;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .btn-cancel,
+  .btn-accept {
+    width: 100%;
+  }
 }
 
 .confirmation-message {
