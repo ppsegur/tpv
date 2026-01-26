@@ -177,9 +177,7 @@ const removeProduct = (index) => {
 const clearProducts = () => {
   if (mesasStore.selectedMesaId) {
     mesasStore.limpiarProductosMesa(mesasStore.selectedMesaId);
-    if (selectedMesaId.value) {
-      closeModal();
-    }
+    closeModal();
   }
 };
 
@@ -427,19 +425,20 @@ const actualizarPrecioPorGramos = (producto) => {
 }
 
 /* Efectos hover */
-.mesa-card:hover:not(.not-selected):not(.selected):not(.selected-ocupada) {
-  transform: scale(1.05); /* Aumentar ligeramente el tamaño */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombra */
+.mesa-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mesa-card.not-selected:hover {
+  opacity: 0.6;
+  filter: blur(0.5px);
+  transform: scale(0.98); /* Mantener escala reducida */
 }
 
 .mesa-card.selected:hover,
 .mesa-card.selected-ocupada:hover {
-  transform: scale(1.08); /* Aumentar más el tamaño para mesas seleccionadas */
-}
-
-.mesa-card.not-selected:hover {
-  opacity: 0.6; /* Ligeramente menos transparente al hacer hover */
-  filter: blur(0.5px);
+  transform: scale(1.08);
 }
 
 /* Responsive para pantallas más pequeñas */
