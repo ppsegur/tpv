@@ -38,34 +38,76 @@
     </div>
 
     <!-- Modal -->
-    <div v-if="showModal" class="modal-overlay">
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal">
-        <h2>Productos de la Mesa {{ selectedMesaId }}</h2>
-        <ul>
-          <li v-for="(producto, index) in selectedProductos" :key="index">
-            {{ producto.name }} -
-            <span v-if="producto.categoria === 'Chacinas'">
-              {{ producto.gramos }}g = €{{ (producto.precioPor100g * (producto.gramos / 100)).toFixed(2) }}
-              <input type="number" v-model.number="producto.gramos" min="1" step="5" @change="actualizarPrecioPorGramos(producto)" />
-            </span>
-            <span v-else>
-              Cantidad: {{ producto.cantidad }} - €{{ (producto.price * producto.cantidad).toFixed(2) }}
-              <button @click="decreaseQuantity(index)">-</button>
-              <button @click="increaseQuantity(index)">+</button>
-            </span>
-            <button @click="removeProduct(index)">Eliminar</button>
-            <button @click.stop="() => { liberarMesa(selectedMesaId); closeModal(); }">Liberar Mesa</button>
-          </li>
-        </ul>
+        <div class="modal-header">
+          <h2>Productos de la Mesa {{ selectedMesaId }}</h2>
+          <button class="close-icon" @click="closeModal" aria-label="Cerrar">×</button>
+        </div>
+        
+        <div class="modal-body">
+          <div v-if="selectedProductos.length === 0" class="empty-state">
+            <p>No hay productos en esta mesa</p>
+          </div>
+          
+          <div v-else class="productos-list">
+            <div v-for="(producto, index) in selectedProductos" :key="index" class="producto-item">
+              <div class="producto-info">
+                <h3>{{ producto.name }}</h3>
+                <span v-if="producto.categoria === 'Chacinas'" class="producto-details">
+                  <div class="weight-control">
+                    <label>Peso (g):</label>
+                    <input 
+                      type="number" 
+                      v-model.number="producto.gramos" 
+                      min="1" 
+                      step="5" 
+                      @change="actualizarPrecioPorGramos(producto)" 
+                      class="weight-input"
+                    />
+                  </div>
+                  <span class="precio">€{{ (producto.precioPor100g * (producto.gramos / 100)).toFixed(2) }}</span>
+                </span>
+                <span v-else class="producto-details">
+                  <div class="quantity-control">
+                    <button class="qty-btn" @click="decreaseQuantity(index)" aria-label="Disminuir">−</button>
+                    <span class="cantidad">{{ producto.cantidad }}</span>
+                    <button class="qty-btn" @click="increaseQuantity(index)" aria-label="Aumentar">+</button>
+                  </div>
+                  <span class="precio">€{{ (producto.price * producto.cantidad).toFixed(2) }}</span>
+                </span>
+              </div>
+              <div class="producto-actions">
+                <button class="btn-eliminar" @click="removeProduct(index)">
+                  <span>🗑️</span> Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <p>Total: €{{ totalPrice.toFixed(2) }}</p>
-        <button @click="closeModal">Cerrar</button>
+        <div class="modal-footer">
+          <div class="total-section">
+            <span class="total-label">Total:</span>
+            <span class="total-price">€{{ totalPrice.toFixed(2) }}</span>
+          </div>
+          <div class="footer-actions">
+            <button class="btn-secondary" @click="closeModal">Cerrar</button>
+            <button 
+              v-if="selectedProductos.length > 0" 
+              class="btn-primary" 
+              @click.stop="() => { liberarMesa(selectedMesaId); closeModal(); }"
+            >
+              Liberar Mesa
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
     <div style="margin-top: 20px;">
-      <button @click="addMesa" style="padding: 10px 20px; font-size: 1rem; background-color: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer;">
-        ➕ Añadir Mesa
+      <button @click="addMesa" class="btn-add-mesa">
+        <span class="icon">➕</span> Añadir Mesa
       </button>
     </div>
 
@@ -283,23 +325,50 @@ const actualizarPrecioPorGramos = (producto) => {
 }
 
 .mesa-actions button {
-  padding: 10px 15px;
+  padding: 12px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 1rem;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mesa-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mesa-actions button:active {
+  transform: translateY(0);
 }
 
 .mesa-actions button:first-child {
-  background-color: #007bff;
+  background-color: #0d6efd;
   color: white;
 }
 
+.mesa-actions button:first-child:hover {
+  background-color: #0b5ed7;
+}
+
+.mesa-actions button:nth-child(2) {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.mesa-actions button:nth-child(2):hover {
+  background-color: #ffb300;
+}
+
 .mesa-actions button:last-child {
-  background-color: #28a745;
+  background-color: #198754;
   color: white;
+}
+
+.mesa-actions button:last-child:hover {
+  background-color: #157347;
 }
 
 /* Estilo para mesas seleccionadas */
@@ -362,44 +431,375 @@ const actualizarPrecioPorGramos = (producto) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  width: 400px;
-  max-width: 90%;
-  text-align: center;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 600px;
+  max-width: 95%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease;
 }
 
-.modal ul li button {
-  margin: 0 5px;
-  padding: 5px 10px;
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.close-icon {
+  background: none;
   border: none;
-  border-radius: 4px;
+  font-size: 2rem;
+  color: #6c757d;
   cursor: pointer;
-  font-size: 0.9rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
 }
 
-.modal ul li button:first-child {
-  background-color: #dc3545; /* Rojo para disminuir */
+.close-icon:hover {
+  background-color: #f8f9fa;
+  color: #dc3545;
+}
+
+.modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.productos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.producto-item {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.producto-item:hover {
+  border-color: #dee2e6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.producto-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.producto-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.producto-details {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.weight-control,
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weight-control label {
+  font-size: 0.95rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.weight-input {
+  width: 90px;
+  padding: 6px 12px;
+  border: 2px solid #ced4da;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.weight-input:focus {
+  outline: none;
+  border-color: #0d6efd;
+}
+
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background-color: #0d6efd;
+  color: white;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  padding: 0;
+}
+
+.qty-btn:hover {
+  background-color: #0b5ed7;
+  transform: scale(1.05);
+}
+
+.qty-btn:active {
+  transform: scale(0.95);
+}
+
+.cantidad {
+  font-size: 1.1rem;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: center;
+  color: #212529;
+}
+
+.precio {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #198754;
+  margin-left: auto;
+}
+
+.producto-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-eliminar {
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-eliminar:hover {
+  background-color: #bb2d3b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-eliminar:active {
+  transform: translateY(0);
+}
+
+.modal-footer {
+  padding: 20px 28px;
+  border-top: 2px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.total-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+}
+
+.total-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.total-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #198754;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #198754;
   color: white;
 }
 
-.modal ul li button:nth-child(2) {
-  background-color: #28a745; /* Verde para aumentar */
+.btn-primary:hover {
+  background-color: #157347;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
   color: white;
 }
 
-.modal ul li button:last-child {
-  background-color: #007bff; /* Azul para eliminar */
+.btn-secondary:hover {
+  background-color: #5c636a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .producto-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .producto-actions {
+    width: 100%;
+  }
+
+  .btn-eliminar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
+/* Botón añadir mesa */
+.btn-add-mesa {
+  padding: 14px 28px;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
   color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-add-mesa:hover {
+  background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
+}
+
+.btn-add-mesa:active {
+  transform: translateY(0);
+}
+
+.btn-add-mesa .icon {
+  font-size: 1.2rem;
 }
 </style>
