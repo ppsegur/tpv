@@ -21,6 +21,7 @@
     <nav id="primary-nav" class="nav-links" :class="{ open: menuOpen }">
       <router-link to="/" @click="closeMenu">Inicio</router-link>
       <router-link to="/historial" @click="closeMenu">Historial</router-link>
+      <router-link to="/arqueo" @click="closeMenu">Arqueo</router-link>
       <router-link to="/gestion" @click="closeMenu">Gestión</router-link>
     </nav>
   </header>
