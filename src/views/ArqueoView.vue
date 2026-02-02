@@ -9,7 +9,6 @@
           id="fecha"
           type="date" 
           v-model="fechaFiltro" 
-          @change="filtrarPorFecha" 
         />
         <button @click="mostrarHoy" class="btn-hoy">Hoy</button>
       </div>
@@ -34,8 +33,8 @@
       </div>
 
       <div 
-        v-for="ticket in ticketsFiltrados" 
-        :key="ticket.fecha + ticket.mesaId"
+        v-for="(ticket, index) in ticketsFiltrados" 
+        :key="`${ticket.fecha}-${ticket.mesaId}-${index}`"
         class="ticket-card"
         @click="abrirFormularioFactura(ticket)"
       >
@@ -118,9 +117,7 @@ const mostrarHoy = () => {
   fechaFiltro.value = hoy.toISOString().split('T')[0];
 };
 
-const filtrarPorFecha = () => {
-  // Trigger computed property recalculation
-};
+// Computed property updates automatically, no manual filtering needed
 
 const formatearFecha = (fechaISO) => {
   const fecha = new Date(fechaISO);
@@ -143,7 +140,7 @@ const cerrarFormulario = () => {
 
 const onFacturaGenerada = (factura) => {
   facturas.value.push(factura);
-  // Opcional: mostrar notificación de éxito
+  // TODO: Replace alert with proper toast notification system
   alert(`Factura ${factura.tipo} generada correctamente para ${factura.cliente.nombre}`);
 };
 </script>

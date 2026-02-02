@@ -187,9 +187,9 @@ const generarFactura = () => {
     ciudad: formData.ciudad,
   });
 
-  // Crear objeto de factura
+  // Crear objeto de factura con ID único (timestamp + random para evitar colisiones)
   const factura = {
-    id: Date.now(),
+    id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
     fecha: new Date().toISOString(),
     tipo: formData.tipoFactura,
     ticketOriginal: props.ticket,
