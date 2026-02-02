@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Gestión de Facturas</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #7c3aed; }
+        h2 { color: #333; border-bottom: 2px solid #7c3aed; padding-bottom: 10px; }
+        .feature-card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .demo-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #7c3aed;
+        }
+        .demo-item h3 {
+            margin-top: 0;
+            color: #7c3aed;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .workflow {
+            background: #e0f2fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .workflow ol {
+            margin: 10px 0;
+        }
+        .workflow li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧾 Sistema de Gestión de Facturas - Demo</h1>
+    
+    <div class="feature-card">
+        <h2>✨ Características Implementadas</h2>
+        <div class="demo-grid">
+            <div class="demo-item">
+                <h3>📊 Vista de Arqueo</h3>
+                <ul>
+                    <li>Filtrado por fecha</li>
+                    <li>Resumen del día</li>
+                    <li>Lista de tickets</li>
+                    <li>Click para generar factura</li>
+                </ul>
+            </div>
+            
+            <div class="demo-item">
+                <h3>📝 Formulario de Factura</h3>
+                <ul>
+                    <li>Campos de cliente completos</li>
+                    <li>Autocompletado por DNI</li>
+                    <li>Tipo de factura (FA/FR)</li>
+                    <li>Validación de campos</li>
+                </ul>
+            </div>
+            
+            <div class="demo-item">
+                <h3>💾 Base de Datos</h3>
+                <ul>
+                    <li>Almacenamiento en localStorage</li>
+                    <li>Búsqueda por DNI</li>
+                    <li>Actualización automática</li>
+                    <li>Persistencia entre sesiones</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-card">
+        <h2>🔄 Flujo de Trabajo: Cliente Nuevo</h2>
+        <div class="workflow">
+            <ol>
+                <li>Usuario accede a <code>/arqueo</code></li>
+                <li>Visualiza tickets del día</li>
+                <li>Click en un ticket → Se abre formulario modal</li>
+                <li>Introduce DNI del cliente</li>
+                <li>Sistema busca en BD → No encuentra</li>
+                <li>Usuario rellena formulario completo:
+                    <ul>
+                        <li>Nombre, Email, Teléfono</li>
+                        <li>Dirección, CP, Ciudad</li>
+                    </ul>
+                </li>
+                <li>Selecciona tipo: <strong>FA</strong> o <strong>FR</strong></li>
+                <li>Click "Generar Factura"</li>
+                <li>✅ Cliente guardado en BD</li>
+                <li>✅ Factura generada y mostrada</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="feature-card">
+        <h2>🔄 Flujo de Trabajo: Cliente Existente</h2>
+        <div class="workflow">
+            <ol>
+                <li>Usuario accede a <code>/arqueo</code></li>
+                <li>Click en un ticket</li>
+                <li>Introduce DNI conocido</li>
+                <li>Click en botón 🔍 o sale del campo</li>
+                <li>✨ Sistema autocompleta:
+                    <ul>
+                        <li>Nombre</li>
+                        <li>Email, Teléfono</li>
+                        <li>Dirección, CP, Ciudad</li>
+                    </ul>
+                </li>
+                <li>Mensaje: "✓ Cliente encontrado"</li>
+                <li>Usuario revisa datos</li>
+                <li>Selecciona tipo de factura</li>
+                <li>Click "Generar Factura"</li>
+                <li>✅ Factura generada</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="feature-card">
+        <h2>🎨 Interfaz de Usuario</h2>
+        <h3>Pantalla de Arqueo</h3>
+        <ul>
+            <li><strong>Cabecera:</strong> "Arqueo de Caja"</li>
+            <li><strong>Filtros:</strong> Selector de fecha + botón "Hoy"</li>
+            <li><strong>Resumen:</strong> 
+                <ul>
+                    <li>Tickets del día (contador)</li>
+                    <li>Total del día (suma en €)</li>
+                </ul>
+            </li>
+            <li><strong>Lista de Tickets:</strong>
+                <ul>
+                    <li>Mesa y fecha/hora</li>
+                    <li>Productos y cantidades</li>
+                    <li>Total del ticket</li>
+                    <li>Indicador "Click para generar factura →"</li>
+                </ul>
+            </li>
+            <li><strong>Facturas Generadas:</strong> Lista de facturas creadas</li>
+        </ul>
+
+        <h3>Formulario de Factura (Modal)</h3>
+        <ul>
+            <li><strong>Título:</strong> "Generar Factura"</li>
+            <li><strong>Info del Ticket:</strong> Mesa, fecha, total</li>
+            <li><strong>Campos del formulario:</strong>
+                <ul>
+                    <li>DNI/NIF * (con botón de búsqueda 🔍)</li>
+                    <li>Nombre completo *</li>
+                    <li>Email</li>
+                    <li>Teléfono</li>
+                    <li>Dirección *</li>
+                    <li>Código Postal *</li>
+                    <li>Ciudad *</li>
+                    <li>Tipo de Factura * (selector: FA/FR)</li>
+                </ul>
+            </li>
+            <li><strong>Botones:</strong> Cancelar / Generar Factura</li>
+        </ul>
+    </div>
+
+    <div class="feature-card">
+        <h2>🛠️ Detalles Técnicos</h2>
+        <h3>Tecnologías Utilizadas</h3>
+        <ul>
+            <li><strong>Vue 3:</strong> Framework de frontend</li>
+            <li><strong>Pinia:</strong> State management</li>
+            <li><strong>Vue Router:</strong> Navegación</li>
+            <li><strong>localStorage:</strong> Persistencia de datos</li>
+        </ul>
+
+        <h3>Archivos Creados/Modificados</h3>
+        <ul>
+            <li><code>src/views/ArqueoView.vue</code> - Vista principal</li>
+            <li><code>src/components/InvoiceForm.vue</code> - Formulario modal</li>
+            <li><code>src/stores/clientes.js</code> - Store de clientes</li>
+            <li><code>src/router.js</code> - Añadida ruta /arqueo</li>
+            <li><code>src/components/Nav-bar.vue</code> - Añadido link Arqueo</li>
+        </ul>
+
+        <h3>Almacenamiento</h3>
+        <p>Clave localStorage: <code>clientes</code></p>
+        <pre><code>{
+  "clientes": [
+    {
+      "dni": "12345678A",
+      "nombre": "Juan Pérez García",
+      "email": "juan@ejemplo.com",
+      "telefono": "666123456",
+      "direccion": "Calle Principal, 123",
+      "codigoPostal": "28001",
+      "ciudad": "Madrid",
+      "fechaRegistro": "2026-02-02T07:52:46.059Z"
+    }
+  ]
+}</code></pre>
+    </div>
+
+    <div class="feature-card">
+        <h2>✅ Validaciones de Seguridad</h2>
+        <ul>
+            <li>✅ CodeQL: 0 vulnerabilidades encontradas</li>
+            <li>✅ Code Review: Todos los comentarios atendidos</li>
+            <li>✅ IDs únicos: Timestamp + random para evitar colisiones</li>
+            <li>✅ Keys únicas en v-for: Combinación de fecha, mesa e índice</li>
+            <li>✅ Sin inyección de código: Datos escapados correctamente</li>
+        </ul>
+    </div>
+
+    <div class="feature-card">
+        <h2>📋 Mejoras Futuras Sugeridas</h2>
+        <ul>
+            <li>🔔 Sistema de notificaciones toast (reemplazar <code>alert()</code>)</li>
+            <li>🖨️ Impresión de facturas en PDF</li>
+            <li>📊 Exportación a sistemas de contabilidad</li>
+            <li>🔍 Búsqueda avanzada de clientes por nombre</li>
+            <li>📈 Estadísticas y gráficos de facturación</li>
+            <li>📧 Envío de facturas por email</li>
+            <li>🏦 Integración con sistemas de pago</li>
+        </ul>
+    </div>
+</body>
+</html>
